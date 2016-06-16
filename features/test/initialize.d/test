@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "== Executing 'test' feature =="
+echo "$(date)"
+echo "$(hostname)"
+c=0
+for var in "$@"; do
+    c=$(($c+1))
+    echo "Parameter $c: $var"
+done
