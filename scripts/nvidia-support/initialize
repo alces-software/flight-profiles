@@ -37,11 +37,16 @@ setup() {
 }
 
 _fetch_installer() {
-    local dir
+    local dir s3_host
     dir="$1"
     eval $(network_fetch_ec2_document | ${_JQ} -r '"_REGION=\(.region)"')
+    if [ "${_REGION}" == "us-east-1" ]; then
+        s3_host="s3.amazonaws.com"
+    else
+        s3_host="s3-${_REGION}.amazonaws.com"
+    fi
     if curl -L -o ${dir}/${_INSTALLER} \
-            https://s3-${_REGION}.amazonaws.com/alces-flight-profiles-${_REGION}/share/${_INSTALLER} \
+            https://${s3_host}/alces-flight-profiles-${_REGION}/share/${_INSTALLER} \
             2>&1 | log_blob "${_LOG}" "fetch"; then
         chmod 0700 ${dir}/${_INSTALLER}
     else
