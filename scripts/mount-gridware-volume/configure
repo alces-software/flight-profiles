@@ -1,0 +1,5 @@
+#!/bin/bash
+if [ "$2" == "master" ]; then
+   mount /dev/xvdd1 /opt/gridware
+   echo '/opt/gridware/site/$cw_DIST/etc/modules' >> /opt/clusterware/etc/gridware/global/modulespath
+fi
