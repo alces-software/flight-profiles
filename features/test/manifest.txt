@@ -1,0 +1,7 @@
+configure.d/test
+fail.d/test
+initialize.d/test
+member-join.d/test
+member-leave.d/test
+node-started.d/test
+start.d/test
