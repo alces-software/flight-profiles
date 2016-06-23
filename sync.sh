@@ -1,10 +1,12 @@
 #!/bin/bash
 if [ -z "$AWS_ACCESS_KEY_ID" ]; then
     echo "$0: must set AWS_ACCESS_KEY_ID"
+    exit 1
 fi
 
 if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
     echo "$0: must set AWS_SECRET_ACCESS_KEY"
+    exit 1
 fi
 
 if [ "$1" == "--dry-run" ]; then
