@@ -1,0 +1,2 @@
+initialize.d/install-site-depots
+initialize.d/share/site-depots/configure

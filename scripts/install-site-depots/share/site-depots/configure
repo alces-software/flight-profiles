@@ -1,0 +1,79 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+main() {
+    local bucket
+    if [ -d "${cw_ROOT}"/var/lib/gridware/depots/site ]; then
+        return 0
+    fi
+
+    # retrieve additional depots to be added and install them in clusterware tree
+    bucket="s3://alces-flight-$(network_ec2_hashed_account)"
+    mkdir -p "${cw_ROOT}"/var/lib/gridware/depots/site
+
+    files_load_config --optional cluster-customizer
+    export AWS_ACCESS_KEY_ID="${cw_CLUSTER_CUSTOMIZER_access_key_id}"
+    export AWS_SECRET_ACCESS_KEY="${cw_CLUSTER_CUSTOMIZER_secret_access_key}"
+
+    "${_S3CMD}" get --recursive ${bucket}/site-depots/ "${cw_ROOT}"/var/lib/gridware/depots/site/
+    if [ -d "${cw_ROOT}"/var/lib/gridware/depots/site/data ]; then
+        # update gridware configuration file
+        sed -e "/^:depot_repo_paths:/a \ - ${cw_ROOT}/var/lib/gridware/depots/site" \
+            -i "${cw_GRIDWARE_root}"/etc/gridware.yml
+        if [ -f "${cw_ROOT}"/var/lib/gridware/depots/site/config.rc ]; then
+            . "${cw_ROOT}"/var/lib/gridware/depots/site/config.rc
+            if [ "${cw_SITE_DEPOTS_default}" ]; then
+                for a in ${cw_SITE_DEPOTS_default}; do
+                    "${_ALCES}" gridware depot install $a
+                done
+            fi
+        fi
+    fi
+}
+
+setup
+
+require network
+require files
+
+_S3CMD="${cw_ROOT}"/opt/s3cmd/s3cmd
+_ALCES="${cw_ROOT}"/bin/alces
+
+files_load_config gridware
+
+main "$@"
