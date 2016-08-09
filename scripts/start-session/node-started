@@ -38,17 +38,22 @@ setup() {
 
 main() {
     local adminuser avails session_type
-    adminuser=$(id -un 1000)
-    avails=" $("${_ALCES}" session avail | sed -r "s:\x1B\[[0-9;]*[mK]::g" | grep '^\[\*\]' | cut -f2 -d'/' | xargs) "
-    if [[ "${avails}" == *" gnome "* ]]; then
-        session_type="gnome"
-    else
-        session_type="$(echo $avails | cut -f1 -d" ")"
+    files_load_config instance config/cluster
+    if [ "${cw_INSTANCE_role}" == "master" ]; then
+        adminuser=$(id -un 1000)
+        avails=" $("${_ALCES}" session avail | sed -r "s:\x1B\[[0-9;]*[mK]::g" | grep '^\[\*\]' | cut -f2 -d'/' | xargs) "
+        if [[ "${avails}" == *" gnome "* ]]; then
+            session_type="gnome"
+        else
+            session_type="$(echo $avails | cut -f1 -d" ")"
+        fi
+        sessionid=$(sudo -u ${adminuser} "${_ALCES}" session start --terse ${session_type})
+        echo "Started session for ${adminuser}: ${sessionid}"
     fi
-    sessionid=$(sudo -u ${adminuser} "${_ALCES}" session start --terse ${session_type})
 }
 
 setup
+require files
 
 _ALCES="${cw_ROOT}"/bin/alces
 main "$@"
