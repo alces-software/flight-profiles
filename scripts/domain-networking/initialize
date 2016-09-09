@@ -25,7 +25,7 @@ cd /opt
 tar xvzf /tmp/bumblebee.tar.gz
 cd bumblebee
 . "${cw_ROOT}"/etc/ruby.rc
-bundle install --path=vendor
+bundle install --local --path=vendor
 export BUMBLEBEE_CONFIG="${cw_ROOT}"/etc/bumblebee.yml
 bin/bumblebee configure
 
