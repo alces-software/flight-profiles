@@ -1,0 +1,140 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+#==============================================================================
+# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Imageware.
+#
+# All rights reserved, see LICENSE.txt.
+#==============================================================================
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+push_config() {
+    local appliance_type
+    local target_file
+    appliance_type="$1"
+    target_file="$2"
+
+    source /opt/clusterware/etc/cluster-customizer.rc
+    args=()
+    if [ -z $cw_CLUSTER_CUSTOMIZER_access_key_id ]; then
+        source /opt/clusterware/etc/config/cluster/instance-aws.rc
+        bucket="s3://alces-flight-${cw_INSTANCE_aws_account_hash}"
+
+        source /opt/clusterware/etc/config/cluster/instance-aws-iam.rc
+        args+=(--access_key="${cw_INSTANCE_aws_iam_role_access_key_id}")
+        args+=(--secret_key="${cw_INSTANCE_aws_iam_role_secret_access_key}")
+        args+=(--access_token="${cw_INSTANCE_aws_iam_role_security_token}")
+    else
+        args+=(--access_key="${cw_CLUSTER_CUSTOMIZER_access_key_id}")
+        args+=(--secret_key="${cw_CLUSTER_CUSTOMIZER_secret_access_key}")
+    fi
+
+    $_S3CMD "${args[@]}" \
+            put ${_TARGET_FILE} \
+            ${bucket:-${cw_CLUSTER_CUSTOMIZER_bucket}}/customizer/domain-${_DOMAIN}/initialize.d/set-${appliance_type}-appliance-address
+}
+
+create_config() {
+    local appliance_type
+    local target_file
+    appliance_type="$1"
+    target_file="$2"
+
+    cat <<'EOF' > "${target_file}"
+#!/bin/bash
+IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+for a in "${xdg_config[@]}"; do
+  if [ -e "${a}"/clusterware/config.rc ]; then
+    source "${a}"/clusterware/config.rc
+    break
+  fi
+done
+kernel_load
+require ruby
+ruby_run <<RUBY
+require 'yaml'
+cfg =
+  if File.exists?('${cw_ROOT}/etc/defaults.yml')
+    YAML.load_file('${cw_ROOT}/etc/defaults.yml')
+  else
+    {}
+  end
+RUBY
+EOF
+    cat <<EOF >> "${target_file}"
+((cfg['cluster'] ||= {})['appliances'] ||= {})['${appliance_type}'] = "https://${cw_ACCESS_fqdn}/"
+EOF
+    cat <<'EOF' >> "${target_file}"
+File.write('${cw_ROOT}/etc/defaults.yml',cfg.to_yaml)
+EOF
+}
+
+configure_appliance() {
+    local appliance_type
+    appliance_type="$1"
+
+    echo 'Pushing configuration to S3'
+    create_config "${appliance_type}" /tmp/configure-appliance-${appliance_type}
+    if push_config "${appliance_type}" /tmp/configure-appliance-${appliance_type}; then
+        echo "Appliance setup complete"
+    else
+        echo "Appliance setup failed :-("
+    fi
+    rm -f /tmp/configure-appliance-${appliance_type}
+}
+
+main() {
+    files_load_config access
+
+    if [ -d /opt/alces-access-manager ]; then
+        configure_appliance access
+    fi
+
+    if [ -d /opt/alces-storage-manager ]; then
+        configure_appliance storage
+    fi
+}
+
+setup
+require network
+require files
+
+_S3CMD=/opt/clusterware/opt/s3cmd/s3cmd
+_DOMAIN=$(hostname -d | cut -f2- -d'.')
+
+main "$@"

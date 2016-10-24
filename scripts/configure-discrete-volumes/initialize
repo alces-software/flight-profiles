@@ -68,14 +68,18 @@ _configure_apps_volume() {
 
 main() {
     if [ -b /dev/xvdp ]; then
+        umount /dev/xvdp* &>/dev/null
         _configure_home_volume /dev/xvdp
     elif [ -b /dev/sdp ]; then
+        umount /dev/sdp* &>/dev/null
         _configure_home_volume /dev/sdp
     fi
 
     if [ -b /dev/xvdq ]; then
+        umount /dev/xvdq* &>/dev/null
         _configure_apps_volume /dev/xvdq
     elif [ -b /dev/sdq ]; then
+        umount /dev/sdq* &>/dev/null
         _configure_apps_volume /dev/sdq
     fi
 }
