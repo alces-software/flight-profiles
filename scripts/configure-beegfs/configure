@@ -1,0 +1,75 @@
+#!/bin/bash
+hook="$1"
+role="$2"
+
+wget -O /etc/yum.repos.d/beegfs-rhel7.repo \
+     http://www.beegfs.com/release/beegfs_2015.03/dists/beegfs-rhel7.repo
+
+case $role in
+    mds)
+        NR_DEVS=0
+        for a in a b c d e f g h i j k l m n o p q r s t u v w x; do
+            if [ -b /dev/xvdc$a ]; then
+                NR_DEVS=$(($NR_DEVS+1))
+                DEVS="$DEVS /dev/xvd$a"
+                echo deadline > /sys/block/xvdx$a/queue/scheduler
+                umount /dev/xvdc$a &>/dev/null
+            fi
+        done
+        mkdir -p /data/mdt
+        mdadm --create 0 --level=0 --run --raid-devices=${NR_DEVS} ${DEVS}
+
+        # xfs
+        mkfs.xfs -l version=2,su=128k -isize=512 /dev/md/0
+        mount -onoatime,nodiratime,nobarrier /dev/md/0 /data/mdt
+
+        # -or- ext4
+        # mkfs.ext4 -i 2048 -I 512 -J size=400 -Odir_index,filetype /dev/md/0
+        #tune2fs -o user_xattr /dev/md/0
+        #mount -onoatime,nodiratime,nobarrier /dev/md/0 /data/mdt
+
+        echo deadline > /sys/block/md0/queue/scheduler
+
+        yum install -y -e0 beegfs-mgmtd beegfs-meta
+
+        /opt/beegfs/sbin/beegfs-setup-mgmtd -p /data/mgt
+        /etc/init.d/beegfs-mgmtd start
+
+        /opt/beegfs/sbin/beegfs-setup-meta -f -p /data/mdt -s 1 -m localhost
+        /etc/init.d/beegfs-meta start
+        ;;
+    oss)
+        NR_DEVS=0
+        for a in a b c d e f g h i j k l m n o p q r s t u v w x; do
+            if [ -b /dev/xvdc$a ]; then
+                NR_DEVS=$(($NR_DEVS+1))
+                DEVS="$DEVS /dev/xvdc$a"
+                echo deadline > /sys/block/xvdc$a/queue/scheduler
+                echo 4096 > /sys/block/xvdc$a/queue/nr_requests
+                echo 4096 > /sys/block/xvdc$a/queue/read_ahead_kb
+                umount /dev/xvdc$a &>/dev/null
+            fi
+        done
+        mdadm --create 0 --level=0 --run --raid-devices=${NR_DEVS} ${DEVS}
+        mkfs.xfs /dev/md/0
+        mkdir -p /data/ost
+        mount -onoatime,nodiratime,logbufs=8,logbsize=256k,largeio,inode64,swalloc,allocsize=131072k \
+              /dev/md/0 /data/ost
+        echo deadline > /sys/block/md0/queue/scheduler
+        echo 4096 > /sys/block/md0/queue/nr_requests
+        echo 4096 > /sys/block/md0/queue/read_ahead_kb
+        echo 5 > /proc/sys/vm/dirty_background_ratio
+        echo 10 > /proc/sys/vm/dirty_ratio
+        echo 50 > /proc/sys/vm/vfs_cache_pressure
+        # for machines with > 8GiB RAM (for <8GiB, use 64MiB)
+        echo 262144 > /proc/sys/vm/min_free_kbytes
+        echo always > /sys/kernel/mm/transparent_hugepage/enabled
+        echo always > /sys/kernel/mm/transparent_hugepage/defrag
+        yum install -y -e0 beegfs-storage
+        ;;
+    *)
+        # CLIENT
+        yum install -y -e0 beegfs-client beegfs-helperd beegfs-utils
+        echo '/sharedscratch /etc/beegfs/beegfs-client.conf' > /etc/beegfs/beegfs-mounts.conf
+        ;;
+esac

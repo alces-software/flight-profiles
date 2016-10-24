@@ -1,0 +1,35 @@
+#!/bin/bash
+hook="$1"
+role="$2"
+custer_name="$3"
+member_metafile="$4"
+
+. "${member_metafile}"
+
+if [ "${cw_MEMBER_role}" == "mds" ]; then
+    case $role in
+        mds)
+            :
+            ;;
+        oss)
+            /opt/beegfs/sbin/beegfs-setup-storage \
+                -p /data/ost -m ${cw_MEMBER_ip}
+            # We no longer use the following parameters, as BeeGFS
+            # will assign these automagically to free identities:
+            # -s 1 -i 101
+            /etc/init.d/beegfs-storage start
+            ;;
+        *)
+            # CLIENT
+            /opt/beegfs/sbin/beegfs-setup-client -m ${cw_MEMBER_ip}
+            /etc/init.d/beegfs-helperd start
+            tgts=$(beegfs-ctl --listnodes --nodetype=storage | wc -l)
+            while [ $tgts -lt 1 ]; do
+                echo "Waiting for storage targets to appear."
+                sleep 1
+                tgts=$(beegfs-ctl --listnodes --nodetype=storage | wc -l)
+            done
+            /etc/init.d/beegfs-client start
+            ;;
+    esac
+fi
