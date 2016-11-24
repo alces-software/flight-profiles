@@ -21,6 +21,19 @@ if [[ -f /tmp/pgilinux-2016-1610-x86_64.tar.gz ]]; then
   popd
 
   rm -rf "$tempdir"
+
+  mkdir -p "$cw_ROOT"/etc/modules/compilers/
+  cp /opt/pgi/modulefiles/pgi/16.10 "$cw_ROOT"/etc/modules/compilers/pgi
+  cat <<EOF
+******************************
+
+Installation complete. A modulefile has been installed for using PGI. To enable
+it run:
+
+alces module enable compilers/pgi
+
+******************************
+EOF
 else
   cat <<EOF
 ******************************
