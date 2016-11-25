@@ -1,0 +1,78 @@
+#%Module1.0#####################################################################
+##
+## Alces HPC Software Stack - Service module file
+## Copyright (c) 2016 Alces Software Ltd
+##
+## path: services/pdsh
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+        source $::env(MODULES_ALCES_TCL)
+    } else {
+        # compatibility mode for module use without availability of Alces tools
+        proc ::process {body} { eval $body }
+        proc ::depend {module {version ""} {_ ""}} {
+            set req [regsub {\-} $module {/}]/$version
+            if { [catch { prereq $req }] } {
+                puts stderr "Could not satisfy prereq: $req"
+                break
+            }
+        }
+        proc ::alces {_ module} { return $module }
+        proc ::search {_ _ _} { }
+    }
+}
+
+proc ModulesHelp { } {
+    puts stderr "
+               =============== matlab ===============
+                          MathWorks Matlab
+               ======================================
+
+This module sets up your environment for the use of the 'matlab'
+service. This module sets up version 'R2016b' of the service in
+conjuntion with the 'matlab' feature profile available through Alces
+Clusterware.
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+\thttps://www.mathworks.com/
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show services/matlab
+
+"
+}
+
+set     app     matlab
+set     version R2016b
+set     appcaps MATLAB
+set     appdir  /opt/matlab/
+
+module-whatis   "
+
+            Title: matlab
+          Summary: Mathematical analysis suite
+            Group: Alces/Services
+              URL: https://www.mathworks.com/
+
+             Name: matlab
+          Version: R2016b
+           Module: [alces pretty services/matlab]
+      Module path: /opt/clusterware/etc/modules/services/matlab
+     Package path: /opt/matlab/
+
+For further information, execute:
+
+\tmodule help services/matlab
+"
+
+prepend-path PATH ${appdir}/bin

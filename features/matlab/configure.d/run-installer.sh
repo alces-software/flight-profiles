@@ -33,7 +33,17 @@ EOF
   "$installdir"/install -inputFile /tmp/matlab_install_settings.txt
 
   if [[ $? -eq 0 ]]; then
-    echo "Installation completed. Matlab available in /opt/matlab"
+    cp "`dirname "$0"`"/../modulefile "$cw_ROOT/etc/modules/services/matlab"
+    cat <<EOF
+******************************
+
+Installation complete. A modulefile has been installed for using Matlab. To
+enable it run:
+
+  alces module enable services/matlab
+
+******************************
+EOF
   else
     echo "Installation failed. See above for error output."
   fi
