@@ -32,14 +32,13 @@ EOF
 
   "$installdir"/install -inputFile /tmp/matlab_install_settings.txt
 
-  rm /tmp/matlab_install_settings.txt
-
   if [[ $? -eq 0 ]]; then
     echo "Installation completed. Matlab available in /opt/matlab"
   else
     echo "Installation failed. See above for error output."
   fi
 
+  rm /tmp/matlab_install_settings.txt
   rm -rf "$tempdir"
   rm -rf "$installdir"
 else
