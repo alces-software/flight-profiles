@@ -10,11 +10,11 @@ if [[ -f /tmp/R2016b_glnxa64_dvd1.iso && -f /tmp/R2016b_glnxa64_dvd2.iso ]]; the
 
   echo "Extracting files from DVD images..."
 
-  mount -o loop /tmp/R2016b_glnxa64_dvd1.iso "$tempdir"
+  mount -o ro,loop /tmp/R2016b_glnxa64_dvd1.iso "$tempdir"
   cp -r "$tempdir"/* "$installdir"
   umount "$tempdir"
 
-  mount -o loop /tmp/R2016b_glnxa64_dvd2.iso "$tempdir"
+  mount -o ro,loop /tmp/R2016b_glnxa64_dvd2.iso "$tempdir"
   cp -r "$tempdir"/* "$installdir"
   umount "$tempdir"
 
