@@ -6,7 +6,7 @@ if [[ -f /tmp/R2016b_glnxa64_dvd1.iso && -f /tmp/R2016b_glnxa64_dvd2.iso ]]; the
   tempdir=$(mktemp -d -t customize-matlab-XXXXXX)
   installdir=$(mktemp -d -t customize-matlab-XXXXXX)
 
-  sudo yum install -qy libXtst
+  sudo yum install -q -y libXtst
 
   echo "Extracting files from DVD images..."
 
