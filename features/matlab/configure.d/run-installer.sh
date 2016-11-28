@@ -33,7 +33,7 @@ EOF
   "$installdir"/install -inputFile /tmp/matlab_install_settings.txt
 
   if [[ $? -eq 0 ]]; then
-    cp "`dirname "$0"`"/../modulefile "$cw_ROOT/etc/modules/services/matlab"
+    cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/services/matlab"
     cat <<EOF
 ******************************
 
