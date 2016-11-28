@@ -14,7 +14,7 @@ if [[ -f /tmp/STAR-CCM+11.02.010_01_linux-x86_64-r8.tar.gz ]]; then
   # -DINSTALLFLEX=false prevents installation of a local license server
   # -DADDSYSTEMPATH=false prevents root's bash profile being munged - it
   #    wouldn't affect cluster users' $PATHs anyway
-  starccm+_11.02.010/STAR-CCM*.bin -i silent -DINSTALLDIR=/opt/star-ccm -DINSTALLFLEX=false -DADDSYSTEMPATH=false
+  starccm+_11.02.010/STAR-CCM*.bin -i silent -DINSTALLFLEX=false -DADDSYSTEMPATH=false
 
   popd
 
