@@ -1,0 +1,78 @@
+#%Module1.0#####################################################################
+##
+## Alces HPC Software Stack - Service module file
+## Copyright (c) 2016 Alces Software Ltd
+##
+## path: services/starccm+
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+        source $::env(MODULES_ALCES_TCL)
+    } else {
+        # compatibility mode for module use without availability of Alces tools
+        proc ::process {body} { eval $body }
+        proc ::depend {module {version ""} {_ ""}} {
+            set req [regsub {\-} $module {/}]/$version
+            if { [catch { prereq $req }] } {
+                puts stderr "Could not satisfy prereq: $req"
+                break
+            }
+        }
+        proc ::alces {_ module} { return $module }
+        proc ::search {_ _ _} { }
+    }
+}
+
+proc ModulesHelp { } {
+    puts stderr "
+               ============== starccm+ ==============
+                          STAR-CCM+ 11.02
+               ======================================
+
+This module sets up your environment for the use of the 'starccm+'
+service. This module sets up version '11.02' of the service in
+conjuntion with the 'starccm+' feature profile available through Alces
+Clusterware.
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+\thttp://mdx.plm.automation.siemens.com/star-ccm-plus
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show services/starccm+
+
+"
+}
+
+set     app     starccm+
+set     version 11.02
+set     appcaps STARCCM+
+set     appdir  /opt/CD-adapco/STAR-CCM+11.02.010-R8/star
+
+module-whatis   "
+
+            Title: STAR-CCM+
+          Summary: Mathematical simulation package
+            Group: Alces/Services
+              URL: http://mdx.plm.automation.siemens.com/star-ccm-plus
+
+             Name: starccm+
+          Version: 11.02
+           Module: [alces pretty services/starccm+]
+      Module path: /opt/clusterware/etc/modules/services/starccm+
+     Package path: /opt/CD-adapco/STAR-CCM+11.02.010-R8/star/
+
+For further information, execute:
+
+\tmodule help services/starccm+
+"
+
+prepend-path PATH ${appdir}/bin
