@@ -1,1 +1,2 @@
 configure.d/run-installer.sh
+resources/modulefile

@@ -27,7 +27,18 @@ EOF
   echo "Running Intel installer..."
   ./parallel_studio_xe_2017_update1/install.sh --silent=./silent.cfg
   if [[ $? -eq 0 ]]; then
-    echo "Installation completed. Intel tools available in /opt/intel/bin"
+    mkdir -p "$cw_ROOT"/etc/modules/compilers/
+    cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/compilers/intel-parallel-studio-xe"
+    cat <<EOF
+******************************
+
+Installation complete. A modulefile has been installed for using Intel Parallel
+Studio XE. To enable it run:
+
+alces module enable compilers/intel-parallel-studio-xe
+
+******************************
+EOF
   else
     echo "Installation failed. See above for error output."
   fi
