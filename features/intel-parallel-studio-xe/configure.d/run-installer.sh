@@ -61,7 +61,7 @@ else
   Then, please copy it to /tmp/parallel_studio_xe_2017_update1.tgz and run the
   following command:
 
-  alces customize trigger configure profile-parallel-studio-xe
+  alces customize trigger configure profile-intel-parallel-studio-xe
 
   Installation will then continue.
 
