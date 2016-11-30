@@ -26,6 +26,10 @@ enable it run:
 
   alces module enable services/starccm+
 
+You can now delete the installer file by running:
+
+  rm /tmp/STAR-CCM+11.02.010_01_linux-x86_64-r8.tar.gz
+
 ******************************
 EOF
 

@@ -42,6 +42,10 @@ enable it run:
 
   alces module enable services/matlab
 
+You can now delete the installer files by running
+
+  rm /tmp/R2016b_glnxa64_dvd*.iso
+
 ******************************
 EOF
   else
