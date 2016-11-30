@@ -30,7 +30,7 @@ if [[ -f /tmp/pgilinux-2016-1610-x86_64.tar.gz ]]; then
 Installation complete. A modulefile has been installed for using PGI. To enable
 it run:
 
-  alces module enable compilers/pgi
+  alces module load compilers/pgi
 
 You can now delete the installer file by running
 

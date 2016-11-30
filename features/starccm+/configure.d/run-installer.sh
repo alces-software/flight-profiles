@@ -24,7 +24,7 @@ if [[ -f /tmp/STAR-CCM+11.02.010_01_linux-x86_64-r8.tar.gz ]]; then
 Installation complete. A modulefile has been installed for using STAR-CCM+. To
 enable it run:
 
-  alces module enable services/starccm+
+  alces module load services/starccm+
 
 You can now delete the installer file by running:
 

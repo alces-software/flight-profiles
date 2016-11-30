@@ -35,7 +35,7 @@ EOF
 Installation complete. A modulefile has been installed for using Intel Parallel
 Studio XE. To enable it run:
 
-  alces module enable compilers/intel-parallel-studio-xe
+  alces module load compilers/intel-parallel-studio-xe
 
 You can now delete the installer file by running
 

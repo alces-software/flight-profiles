@@ -40,7 +40,7 @@ EOF
 Installation complete. A modulefile has been installed for using Matlab. To
 enable it run:
 
-  alces module enable services/matlab
+  alces module load services/matlab
 
 You can now delete the installer files by running
 
