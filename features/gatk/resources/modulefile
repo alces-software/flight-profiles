@@ -1,0 +1,77 @@
+#%Module1.0#####################################################################
+##
+## Alces HPC Software Stack - Service module file
+## Copyright (c) 2016 Alces Software Ltd
+##
+## path: services/gatk
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+        source $::env(MODULES_ALCES_TCL)
+    } else {
+        # compatibility mode for module use without availability of Alces tools
+        proc ::process {body} { eval $body }
+        proc ::depend {module {version ""} {_ ""}} {
+            set req [regsub {\-} $module {/}]/$version
+            if { [catch { prereq $req }] } {
+                puts stderr "Could not satisfy prereq: $req"
+                break
+            }
+        }
+        proc ::alces {_ module} { return $module }
+        proc ::search {_ _ _} { }
+    }
+}
+
+proc ModulesHelp { } {
+    puts stderr "
+               ================ gatk ================
+                      Genome Analysis Toolkit
+               ======================================
+
+This module sets up your environment for the use of the 'gatk' service in
+conjuntion with the 'gatk' feature profile available through Alces
+Clusterware.
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+\thttps://software.broadinstitute.org/gatk/
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show services/gatk
+
+"
+}
+
+set     app     gatk
+set     version 3.x-alces
+set     appcaps GATK
+set     appdir  /opt/gatk/
+
+module-whatis   "
+
+            Title: gatk
+          Summary: Genome Analysis Toolkit
+            Group: Alces/Services
+              URL: https://software.broadinstitute.org/gatk/
+
+             Name: gatk
+          Version: 3.x-alces
+           Module: [alces pretty services/gatk]
+      Module path: /opt/clusterware/etc/modules/services/gatk
+     Package path: /opt/gatk/
+
+For further information, execute:
+
+\tmodule help services/gatk
+"
+
+set-alias GenomeAnalysisTK "java -jar /opt/gatk/GenomeAnalysisTK.jar"
