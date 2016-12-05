@@ -1,6 +1,6 @@
 #%Module1.0#####################################################################
 ##
-## Alces HPC Software Stack - Service module file
+## Alces HPC Software Stack - Compiler module file
 ## Copyright (c) 2016 Alces Software Ltd
 ##
 ## path: compilers/intel-parallel-studio-xe

@@ -1,6 +1,6 @@
 #%Module1.0#####################################################################
 ##
-## Alces HPC Software Stack - Service module file
+## Alces HPC Software Stack - Application module file
 ## Copyright (c) 2016 Alces Software Ltd
 ##
 ## path: apps/matlab
@@ -61,7 +61,7 @@ module-whatis   "
 
             Title: matlab
           Summary: Mathematical analysis suite
-            Group: Alces/Services
+            Group: Alces/Apps
               URL: https://www.mathworks.com/
 
              Name: matlab

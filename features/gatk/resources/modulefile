@@ -1,6 +1,6 @@
 #%Module1.0#####################################################################
 ##
-## Alces HPC Software Stack - Service module file
+## Alces HPC Software Stack - Application module file
 ## Copyright (c) 2016 Alces Software Ltd
 ##
 ## path: apps/gatk
@@ -60,7 +60,7 @@ module-whatis   "
 
             Title: gatk
           Summary: Genome Analysis Toolkit
-            Group: Alces/Services
+            Group: Alces/Apps
               URL: https://software.broadinstitute.org/gatk/
 
              Name: gatk
