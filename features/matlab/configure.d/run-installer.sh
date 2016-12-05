@@ -33,14 +33,15 @@ EOF
   "$installdir"/install -inputFile /tmp/matlab_install_settings.txt
 
   if [[ $? -eq 0 ]]; then
-    cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/services/matlab"
+    mkdir -p "$cw_ROOT/etc/modules/apps"
+    cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/apps/matlab"
     cat <<EOF
 ******************************
 
 Installation complete. A modulefile has been installed for using Matlab. To
 enable it run:
 
-  alces module load services/matlab
+  alces module load apps/matlab
 
 You can now delete the installer files by running
 
