@@ -3,7 +3,7 @@
 ## Alces HPC Software Stack - Service module file
 ## Copyright (c) 2016 Alces Software Ltd
 ##
-## path: services/queue-gatk
+## path: apps/gatk-queue
 ################################################################################
 if { [info exists ::env(ALCES_TRACE)] } {
     puts stderr " -> $::ModulesCurrentModulefile"
@@ -33,8 +33,8 @@ proc ModulesHelp { } {
                                Queue
                ======================================
 
-This module sets up your environment for the use of the 'gatk-queue' service in
-conjuntion with the 'gatk-queue' feature profile available through Alces
+This module sets up your environment for the use of the 'gatk-queue' application
+in conjuntion with the 'gatk-queue' feature profile available through Alces
 Clusterware.
 
 >> FURTHER INFORMATION <<
@@ -46,7 +46,7 @@ More information about this software can be found at the website:
 For further details regarding this module, including the environment
 modifications it will apply, execute:
 
-\tmodule show services/gatk-queue
+\tmodule show apps/gatk-queue
 
 "
 }
@@ -65,13 +65,13 @@ module-whatis   "
 
              Name: gatk-queue
           Version: 3.x-alces
-           Module: [alces pretty services/gatk-queue]
-      Module path: /opt/clusterware/etc/modules/services/gatk-queue
+           Module: [alces pretty apps/gatk-queue]
+      Module path: /opt/clusterware/etc/modules/apps/gatk-queue
      Package path: /opt/gatk-queue/
 
 For further information, execute:
 
-\tmodule help services/gatk-queue
+\tmodule help apps/gatk-queue
 "
 
 set-alias Queue "java -jar /opt/gatk-queue/Queue.jar"

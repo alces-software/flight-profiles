@@ -20,14 +20,16 @@ if [[ -f $RAW_TARBALL ]]; then
   tar -xf "$RAW_TARBALL"
 
   popd
-  cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/services/gatk-queue"
+
+  mkdir -p "$cw_ROOT/etc/modules/apps/"
+  cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/apps/gatk-queue"
   cat <<EOF
 ******************************
 
 Installation complete. A modulefile has been installed for using Queue. To
 enable it run:
 
-  alces module load services/gatk-queue
+  alces module load apps/gatk-queue
 
 Once enabled you can then use Queue by running e.g.
 
