@@ -65,7 +65,7 @@ module-whatis   "
 
              Name: gatk
           Version: 3.x-alces
-           Module: [alces pretty services/gatk]
+           Module: [alces pretty apps/gatk]
       Module path: /opt/clusterware/etc/modules/apps/gatk
      Package path: /opt/gatk/
 
