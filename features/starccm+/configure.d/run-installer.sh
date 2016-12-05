@@ -17,14 +17,15 @@ if [[ -f /tmp/STAR-CCM+11.02.010_01_linux-x86_64-r8.tar.gz ]]; then
   starccm+_11.02.010/STAR-CCM*.bin -i silent -DINSTALLFLEX=false -DADDSYSTEMPATH=false
 
   popd
-  cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/services/starccm+"
+  mkdir -p "$cw_ROOT/etc/modules/apps/"
+  cp "`dirname "$0"`"/../resources/modulefile "$cw_ROOT/etc/modules/apps/starccm+"
   cat <<EOF
 ******************************
 
 Installation complete. A modulefile has been installed for using STAR-CCM+. To
 enable it run:
 
-  alces module load services/starccm+
+  alces module load apps/starccm+
 
 You can now delete the installer file by running:
 

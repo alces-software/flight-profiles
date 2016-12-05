@@ -1,9 +1,9 @@
 #%Module1.0#####################################################################
 ##
-## Alces HPC Software Stack - Service module file
+## Alces HPC Software Stack - Application module file
 ## Copyright (c) 2016 Alces Software Ltd
 ##
-## path: services/starccm+
+## path: apps/starccm+
 ################################################################################
 if { [info exists ::env(ALCES_TRACE)] } {
     puts stderr " -> $::ModulesCurrentModulefile"
@@ -34,7 +34,7 @@ proc ModulesHelp { } {
                ======================================
 
 This module sets up your environment for the use of the 'starccm+'
-service. This module sets up version '11.02' of the service in
+application. This module sets up version '11.02' of the application in
 conjunction with the 'starccm+' feature profile available through Alces
 Clusterware.
 
@@ -47,7 +47,7 @@ More information about this software can be found at the website:
 For further details regarding this module, including the environment
 modifications it will apply, execute:
 
-\tmodule show services/starccm+
+\tmodule show apps/starccm+
 
 "
 }
@@ -61,18 +61,18 @@ module-whatis   "
 
             Title: STAR-CCM+
           Summary: Mathematical simulation package
-            Group: Alces/Services
+            Group: Alces/Apps
               URL: http://mdx.plm.automation.siemens.com/star-ccm-plus
 
              Name: starccm+
           Version: 11.02
-           Module: [alces pretty services/starccm+]
-      Module path: /opt/clusterware/etc/modules/services/starccm+
+           Module: [alces pretty apps/starccm+]
+      Module path: /opt/clusterware/etc/modules/apps/starccm+
      Package path: /opt/CD-adapco/STAR-CCM+11.02.010-R8/star/
 
 For further information, execute:
 
-\tmodule help services/starccm+
+\tmodule help apps/starccm+
 "
 
 prepend-path PATH ${appdir}/bin
