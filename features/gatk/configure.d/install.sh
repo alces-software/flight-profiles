@@ -42,7 +42,6 @@ You can now delete the release file by running:
 ******************************
 EOF
 
-  rm -rf "$tempdir"
 else
   cat <<EOF
 ******************************
