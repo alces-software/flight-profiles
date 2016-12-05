@@ -34,7 +34,7 @@ proc ModulesHelp { } {
                ======================================
 
 This module sets up your environment for the use of the 'gatk-queue' application
-in conjuntion with the 'gatk-queue' feature profile available through Alces
+in conjunction with the 'gatk-queue' feature profile available through Alces
 Clusterware.
 
 >> FURTHER INFORMATION <<

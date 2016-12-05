@@ -35,7 +35,7 @@ proc ModulesHelp { } {
 
 This module sets up your environment for the use of the 'starccm+'
 service. This module sets up version '11.02' of the service in
-conjuntion with the 'starccm+' feature profile available through Alces
+conjunction with the 'starccm+' feature profile available through Alces
 Clusterware.
 
 >> FURTHER INFORMATION <<

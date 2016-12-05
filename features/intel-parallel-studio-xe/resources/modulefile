@@ -35,7 +35,7 @@ proc ModulesHelp { } {
 
 This module sets up your environment for the use of the
 'intel-parallel-studio-xe' service. This module sets up version '2017 update 1'
-of the service in conjuntion with the 'intel-parallel-studio-xe' feature
+of the service in conjunction with the 'intel-parallel-studio-xe' feature
 profile available through Alces Clusterware.
 
 >> FURTHER INFORMATION <<

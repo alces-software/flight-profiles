@@ -34,7 +34,7 @@ proc ModulesHelp { } {
                ======================================
 
 This module sets up your environment for the use of the 'gatk' service in
-conjuntion with the 'gatk' feature profile available through Alces
+conjunction with the 'gatk' feature profile available through Alces
 Clusterware.
 
 >> FURTHER INFORMATION <<

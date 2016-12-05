@@ -35,7 +35,7 @@ proc ModulesHelp { } {
 
 This module sets up your environment for the use of the 'matlab'
 service. This module sets up version 'R2016b' of the service in
-conjuntion with the 'matlab' feature profile available through Alces
+conjunction with the 'matlab' feature profile available through Alces
 Clusterware.
 
 >> FURTHER INFORMATION <<
