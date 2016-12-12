@@ -65,7 +65,7 @@ push_config() {
     fi
 
     $_S3CMD "${args[@]}" \
-            put ${_TARGET_FILE} \
+            put ${target_file} \
             ${bucket:-${cw_CLUSTER_CUSTOMIZER_bucket}}/customizer/domain-${_DOMAIN}/initialize.d/set-${appliance_type}-appliance-address
 }
 
@@ -94,13 +94,13 @@ cfg =
   else
     {}
   end
-RUBY
 EOF
     cat <<EOF >> "${target_file}"
 ((cfg['cluster'] ||= {})['appliances'] ||= {})['${appliance_type}'] = "https://${cw_ACCESS_fqdn}/"
 EOF
     cat <<'EOF' >> "${target_file}"
 File.write('${cw_ROOT}/etc/defaults.yml',cfg.to_yaml)
+RUBY
 EOF
 }
 
