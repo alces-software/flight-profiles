@@ -27,6 +27,14 @@ cd bumblebee
 . "${cw_ROOT}"/etc/ruby.rc
 bundle install --local --path=vendor
 export BUMBLEBEE_CONFIG="${cw_ROOT}"/etc/bumblebee.yml
+while [ ! -f "${BUMBLEBEE_CONFIG}" ]; do
+    sleep 1
+    c=$(($c+1))
+    if [ $c -gt 120 ]; then
+        echo "No bumblebee configuration file was found after 120s."
+        exit 1
+    fi
+done
 bin/bumblebee configure
 
 sed -i -e 's/#\?cw_CLUSTERABLE_manage_hostname=.*/cw_CLUSTERABLE_manage_hostname=false/g' \
