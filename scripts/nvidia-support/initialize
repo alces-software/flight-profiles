@@ -85,6 +85,11 @@ _install_pciutils() {
 main() {
     local nvdevs n3d nvga n i dir
     set -o pipefail
+
+    log "Preserving distro GL libraries"
+    mkdir -p "${cw_ROOT}"/var/lib/sessions/lib
+    cp -av /usr/lib64/libGL.so.* /usr/lib64/libEGL.so.* "${cw_ROOT}"/var/lib/sessions/lib
+
     log "Checking for existence of nvidia driver" "${_LOG}"
     if ! modinfo nvidia 2>&1 | log_blob "${_LOG}" "modinfo"; then
         log "Driver not found - fetching installer" "${_LOG}"
