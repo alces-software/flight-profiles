@@ -91,6 +91,7 @@ case $role in
     *)
         # CLIENT
         yum install -y -e0 beegfs-client beegfs-helperd beegfs-utils
+        mkdir /sharedscratch
         echo '/sharedscratch /etc/beegfs/beegfs-client.conf' > /etc/beegfs/beegfs-mounts.conf
         ;;
 esac

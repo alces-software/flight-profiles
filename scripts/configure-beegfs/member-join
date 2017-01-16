@@ -53,7 +53,7 @@ if [ "${cw_MEMBER_role}" == "mds" ]; then
                 sleep 1
                 tgts=$(beegfs-ctl --listnodes --nodetype=storage | wc -l)
             done
-            /etc/init.d/beegfs-client restart
+            /etc/init.d/beegfs-client restart 
             ;;
     esac
 fi
