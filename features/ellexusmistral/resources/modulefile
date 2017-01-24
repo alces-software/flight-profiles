@@ -79,4 +79,4 @@ prepend-path PATH ${appdir}
 setenv ${appcaps} ${appdir}
 setenv ${appcaps}DIR ${appdir}
 setenv ${appcaps}LICENSE ${appdir}/license
-setenv MISTRAL_RLM_LICENSE ${appdir}/license/mistral_lic_file
+setenv MISTRAL_RLM_LICENSE ${appdir}/license/ellexusmistral-license.lic
