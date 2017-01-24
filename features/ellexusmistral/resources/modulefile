@@ -55,7 +55,7 @@ modifications it will apply, execute:
 set     app     ellexusmistral
 set     version 2.9.4
 set     appcaps ELLEXUSMISTRAL
-set     appdir  /opt/ellexusmistral/2.9.4
+set     appdir  /opt/apps/ellexusmistral/2.9.4
 
 module-whatis   "
 
@@ -67,8 +67,8 @@ module-whatis   "
              Name: ellexusmistral
           Version: 2.9.4
            Module: [alces pretty apps/ellexusmistral]
-      Module path: /opt/clusterware/etc/modules/apps/ellexusmistral
-     Package path: /opt/ellexusmistral
+      Module path: /opt/apps/etc/modules/apps/ellexusmistral
+     Package path: /opt/apps/ellexusmistral
 
 For further information, execute:
 
@@ -77,5 +77,6 @@ For further information, execute:
 
 prepend-path PATH ${appdir}
 setenv ${appcaps} ${appdir}
+setenv ${appcaps}DIR ${appdir}
 setenv ${appcaps}LICENSE ${appdir}/license
 setenv MISTRAL_RLM_LICENSE ${appdir}/license/mistral_lic_file
