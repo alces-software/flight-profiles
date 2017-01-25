@@ -37,7 +37,7 @@ elif [ "$1" == "--legacy" ]; then
         assert_unchanged
         # we always tag master when pushed
         tag=2016.4.$(date +%Y%m%d%H%M%S)
-        git tag $tag && git push --follow-tags origin master
+        git tag $tag && git push origin master && git push --tags
         if [ $? -gt 0 ]; then
             exit 1
         fi
@@ -52,7 +52,7 @@ else
         assert_unchanged
         # we always tag master when pushed
         tag=$prefix.$(date +%Y%m%d%H%M%S)
-        git tag $tag && git push --follow-tags origin master
+        git tag $tag && git push origin master && git push --tags
         if [ $? -gt 0 ]; then
             exit 1
         fi
