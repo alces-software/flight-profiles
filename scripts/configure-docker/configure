@@ -88,6 +88,8 @@ REPO
                 apt-get install -y linux-image-extra-$(uname -r) linux-image-extra-virtual
                 apt-get install -y docker-engine
             fi
+            # add admin user to docker group
+            usermod -a -G docker $(id -un 1000)
         else
             echo "Sorry, the Docker repository is not available."
             exit 1
