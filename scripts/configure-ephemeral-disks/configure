@@ -117,21 +117,22 @@ main() {
 
     if [ "${cw_CLUSTER_ephemeral_swap}" == "skip" ]; then
         # configured to skip swap, so 100% for scratch
-        lvcreate -n scratch -l 100%FREE ephemeral
+        lvcreate -f -n scratch -l 100%FREE ephemeral
         _configure_scratch
     else
         vg_total=$(vgdisplay -c ephemeral | awk -F ':' '{print $12}')
         swap_size=${cw_CLUSTER_ephemeral_swap_size_kib:-$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')}
-        if [ "${cw_CLUSTER_ephemeral_swap_max_kib}" -a "${swap_size}" -gt "${cw_CLUSTER_ephemeral_swap_max_kib}" ]; then
+        cw_CLUSTER_ephemeral_swap_max_kib="${cw_CLUSTER_ephemeral_swap_max_kib:-0}"
+        if [ "${cw_CLUSTER_ephemeral_swap_max_kib}" -gt 0 -a "${swap_size}" -gt "${cw_CLUSTER_ephemeral_swap_max_kib:-0}" ]; then
             swap_size="${cw_CLUSTER_ephemeral_swap_max_kib}"
         fi
         vg_remain=$(( ${vg_total} - ${swap_size} ))
         # See if we have more than 2GB available after enabling swap.
         if (( ${vg_remain} < 2092152 )); then
             echo "Skipping scratch creation: selected size of ${swap_size}KiB for swap would leave ${vg_remain}KiB"
-            lvcreate -n swap -l 100%FREE ephemeral
+            lvcreate -Wy -n swap -l 100%FREE ephemeral
         else
-            lvcreate -n swap -L ${swap_size}K ephemeral
+            lvcreate -Wy -n swap -L ${swap_size}K ephemeral
             if [ "${cw_CLUSTER_ephemeral_scratch}" != "skip" ]; then
                 lvcreate -n scratch -l 100%FREE ephemeral
                 _configure_scratch
