@@ -104,11 +104,14 @@ main() {
         echo "No ephemeral storage detected."
         _set_swappiness
         return
+    elif [ "$nr_devs" == "1" ]; then
+        pvcreate -f ${devs}
+        vgcreate ephemeral ${devs}
+    else
+        mdadm --create 0 --level=0 --run --raid-devices=${nr_devs} ${devs}
+        pvcreate -f /dev/md/0
+        vgcreate ephemeral /dev/md/0
     fi
-
-    mdadm --create 0 --level=0 --run --raid-devices=${nr_devs} ${devs}
-    pvcreate /dev/md/0
-    vgcreate ephemeral /dev/md/0
 
     if [ "${cw_CLUSTER_ephemeral_swap}" == "skip" ]; then
         # configured to skip swap, so 100% for scratch
