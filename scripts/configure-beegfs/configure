@@ -38,6 +38,7 @@ case $role in
             fi
         done
         mkdir -p /data/mdt
+        yum install -y -e0 mdadm
         mdadm --create 0 --level=0 --run --raid-devices=${NR_DEVS} ${DEVS}
 
         # xfs
