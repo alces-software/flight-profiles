@@ -36,9 +36,20 @@ setup() {
     kernel_load
 }
 
+_set_swappiness() {
+    if [ ! -d /var/lib/swapspace ]; then
+        # if this directory is not present we assume we have no swap
+        # space so set swappiness appropriately.
+        echo "No swap detected: setting vm.swappiness=0"
+        sysctl -w vm.swappiness=0
+    fi
+}
+
 _mount_ephemeral() {
     if [ "${cw_CLUSTER_ephemeral_swap}" != "skip" -a -b /dev/mapper/ephemeral-swap ]; then
         swapon -L ephemeral
+    else
+        _set_swappiness
     fi
     if [ "${cw_CLUSTER_ephemeral_scratch}" != "skip" -a -b /dev/mapper/ephemeral-scratch ]; then
         mount -onoatime,nodiratime,nobarrier /dev/mapper/ephemeral-scratch /localscratch
@@ -67,7 +78,8 @@ main() {
     files_load_config config config/cluster
 
     if [ "${cw_CLUSTER_ephemeral_swap}" == "skip" -a "${cw_CLUSTER_ephemeral_scratch}" == "skip" ]; then
-        # configured to skip both scratch and swap
+        # Configured to skip both scratch and swap.
+        _set_swappiness
         return
     elif [ -d "${cw_ROOT}"/etc/config/configure-ephemeral ]; then
         # already configured - mount at boot
@@ -90,6 +102,7 @@ main() {
 
     if [ "$nr_devs" == "0" ]; then
         echo "No ephemeral storage detected."
+        _set_swappiness
         return
     fi
 
