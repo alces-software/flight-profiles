@@ -128,9 +128,12 @@ main() {
         _configure_scratch
     else
         vg_total=$(vgdisplay -c ephemeral | awk -F ':' '{print $12}')
-        swap_size=${cw_CLUSTER_ephemeral_swap_size_kib:-$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')}
-        cw_CLUSTER_ephemeral_swap_max_kib="${cw_CLUSTER_ephemeral_swap_max_kib:-0}"
-        if [ "${cw_CLUSTER_ephemeral_swap_max_kib}" -gt 0 -a "${swap_size}" -gt "${cw_CLUSTER_ephemeral_swap_max_kib:-0}" ]; then
+        if [ "${cw_CLUSTER_ephemeral_swap_size_kib:-0}" == 0 ]; then
+            swap_size=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+        else
+            swap_size=${cw_CLUSTER_ephemeral_swap_size_kib}
+        fi
+        if [ "${cw_CLUSTER_ephemeral_swap_max_kib:-0}" -gt 0 -a "${swap_size}" -gt "${cw_CLUSTER_ephemeral_swap_max_kib:-0}" ]; then
             swap_size="${cw_CLUSTER_ephemeral_swap_max_kib}"
         fi
         vg_remain=$(( ${vg_total} - ${swap_size} ))
