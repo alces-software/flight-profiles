@@ -101,8 +101,15 @@ main() {
     done
 
     if [ "$nr_devs" == "0" ]; then
-        echo "No ephemeral storage detected."
-        _set_swappiness
+        if [ "${cw_CLUSTER_ephemeral_swap}" == "always" ]; then
+            echo "No ephemeral storage detected. Activatating automated swap space fulfilment."
+            ${_ALCES} service install swapspace
+            ${_ALCES} service enable swapspace
+            distro_start_service clusterware-swapspace
+        else
+            echo "No ephemeral storage detected. Swap not activated."
+            _set_swappiness
+        fi
         return
     elif [ "$nr_devs" == "1" ]; then
         yum install -y -e0 lvm2
@@ -145,5 +152,8 @@ main() {
 
 setup
 require files
+require distro
+
+_ALCES="${cw_ROOT}"/bin/alces
 
 main "$@"
