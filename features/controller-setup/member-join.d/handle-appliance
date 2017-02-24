@@ -49,7 +49,7 @@ main() {
         fi
         . "${member_metafile}"
         # add appliance details as necessary
-        if [[ ",${cw_MEMBER_tags}," == *",appliance_roles=monitor,"* ]]; then
+        if [[ ",${cw_MEMBER_tags}," == *",appliance_roles=:monitor:,"* ]]; then
             echo "Monitor appliance detected: ${member_metafile}"
             if [ "$hook" == "member-join" ]; then
                 files_load_config config config/cluster
