@@ -1,1 +1,3 @@
 configure.d/controller-setup
+member-join.d/handle-appliance
+member-leave.d/handle-appliance

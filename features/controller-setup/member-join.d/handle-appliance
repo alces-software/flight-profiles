@@ -1,0 +1,91 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+main() {
+    local hook role cluster_name member_metafile url password
+    hook="$1"
+    role="$2"
+    cluster_name="$3"
+    member_metafile="$4"
+
+    if [ -d /opt/controller ]; then
+        if [ ! -f "${member_metafile}" ]; then
+            member_metafile=${member_metafile%%.*}
+        fi
+        . "${member_metafile}"
+        # add appliance details as necessary
+        if [[ ",${cw_MEMBER_tags}," == *",appliance_roles=monitor,"* ]]; then
+            echo "Monitor appliance detected: ${member_metafile}"
+            if [ "$hook" == "member-join" ]; then
+                files_load_config config config/cluster
+                files_load_config instance-aws config/cluster
+                eval $(ruby_run <<RUBY
+require 'yaml'
+ENV['FLY_SIMPLE_OUTPUT'] = "true"
+yaml_data = \`/opt/fly/bin/fly domain status "${cw_CLUSTER_domain}" --region "${cw_INSTANCE_aws_region}"\`
+domain_status = YAML.load(yaml_data)
+url = (domain_status['appliances']['monitor']['url'] rescue nil)
+password = (domain_status['appliances']['monitor']['extra']['Nagios password'] rescue nil)
+puts %(url="#{url}"\npassword="#{password}")
+RUBY
+                    )
+                echo "Updating monitor appliance URL and password: ${url}, ${password}"
+                sed -i \
+                    -e "s,#FLIGHT_RADAR_monitor_url=.*/FLIGHT_RADAR_monitor_url=${url}/g" \
+                    -e "s,#FLIGHT_RADAR_monitor_password=.*,FLIGHT_RADAR_monitor_password=${password},g" \
+                    /opt/flight-radar/etc/flight-radar.rc
+            else
+                # member-leave
+                echo "Monitor appliance left; removing URL and password"
+                sed -i \
+                    -e "s,FLIGHT_RADAR_monitor_url=.*,#FLIGHT_RADAR_monitor_url=,g" \
+                    -e "s,FLIGHT_RADAR_monitor_password=.*,#FLIGHT_RADAR_monitor_password=,g" \
+                    /opt/flight-radar/etc/flight-radar.rc
+            fi
+            systemctl restart flight-radar
+        fi
+    else
+        echo "This node is not configured as a Flight Controller appliance; skipping."
+    fi
+}
+
+setup
+require files
+require ruby
+
+main "$@"
