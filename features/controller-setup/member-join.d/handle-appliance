@@ -66,7 +66,7 @@ RUBY
                     )
                 echo "Updating monitor appliance URL and password: ${url}, ${password}"
                 sed -i \
-                    -e "s,#FLIGHT_RADAR_monitor_url=.*/FLIGHT_RADAR_monitor_url=${url}/g" \
+                    -e "s,#FLIGHT_RADAR_monitor_url=.*,FLIGHT_RADAR_monitor_url=${url},g" \
                     -e "s,#FLIGHT_RADAR_monitor_password=.*,FLIGHT_RADAR_monitor_password=${password},g" \
                     /opt/flight-radar/etc/flight-radar.rc
             else
