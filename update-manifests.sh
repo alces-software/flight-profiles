@@ -5,3 +5,5 @@ for a in machines/*/* features/*; do
     find -H */* -type f -print > manifest.txt
     popd
 done
+
+./generate-repo-index.rb features/
