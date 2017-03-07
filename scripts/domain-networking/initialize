@@ -26,6 +26,10 @@ tar xvzf /tmp/bumblebee.tar.gz
 cd bumblebee
 . "${cw_ROOT}"/etc/ruby.rc
 bundle install --local --path=vendor
+if [ -d "${cw_ROOT}"/etc/config/domain-networking ]; then
+    echo "Domain networking configuration has already been completed"
+    exit 0
+fi
 export BUMBLEBEE_CONFIG="${cw_ROOT}"/etc/bumblebee.yml
 while [ ! -f "${BUMBLEBEE_CONFIG}" ]; do
     sleep 1
@@ -35,7 +39,8 @@ while [ ! -f "${BUMBLEBEE_CONFIG}" ]; do
         exit 1
     fi
 done
-bin/bumblebee configure
-
-sed -i -e 's/#\?cw_CLUSTERABLE_manage_hostname=.*/cw_CLUSTERABLE_manage_hostname=false/g' \
-    /opt/clusterware/etc/clusterable.rc
+if bin/bumblebee configure; then
+    mkdir -p "${cw_ROOT}"/etc/config/domain-networking
+    sed -i -e 's/#\?cw_CLUSTERABLE_manage_hostname=.*/cw_CLUSTERABLE_manage_hostname=false/g' \
+        /opt/clusterware/etc/clusterable.rc
+fi
