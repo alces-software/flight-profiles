@@ -15,9 +15,22 @@ Dir.entries(rootDir).select {|f| !File.directory? f}.each do |profile_name|
     manifest = File.read(manifest_file).split("\n")
     profile['manifest'] = manifest
 
-    if File.exists(tags_file)
+    if File.exists?(tags_file)
       tags = File.read(tags_file).split("\n")
       profile['tags'] = tags
+    end
+
+    if Dir.exists?("#{rootDir}/#{profile_name}/initialize.d") || Dir.exists?("#{rootDir}/#{profile_name}/preconfigure.d")
+      # Automagically tag profile as pre-init
+      if !profile.key?('tags')
+        profile['tags'] = []
+        File.write(tags_file, "pre-init\n")
+      end
+      if !profile['tags'].include?('pre-init')
+        # tags were specified but pre-init was not. We should fix that:
+        File.open(tags_file, 'a') { |f| f.write("pre-init\n") }
+        profile['tags'] << 'pre-init'
+      end
     end
 
     profiles[profile_name] = profile
