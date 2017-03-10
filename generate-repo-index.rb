@@ -21,15 +21,15 @@ Dir.entries(rootDir).select {|f| !File.directory? f}.each do |profile_name|
     end
 
     if Dir.exists?("#{rootDir}/#{profile_name}/initialize.d") || Dir.exists?("#{rootDir}/#{profile_name}/preconfigure.d")
-      # Automagically tag profile as pre-init
+      # Automagically tag profile as startup
       if !profile.key?('tags')
         profile['tags'] = []
-        File.write(tags_file, "pre-init\n")
+        File.write(tags_file, "startup\n")
       end
-      if !profile['tags'].include?('pre-init')
-        # tags were specified but pre-init was not. We should fix that:
-        File.open(tags_file, 'a') { |f| f.write("pre-init\n") }
-        profile['tags'] << 'pre-init'
+      if !profile['tags'].include?('startup')
+        # tags were specified but startup was not. We should fix that:
+        File.open(tags_file, 'a') { |f| f.write("startup\n") }
+        profile['tags'] << 'startup'
       end
     end
 
