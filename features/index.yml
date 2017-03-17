@@ -1,0 +1,169 @@
+---
+profiles:
+  starccm+:
+    manifest:
+    - configure.d/run-installer.sh
+    - resources/modulefile
+    tags:
+    - software
+  password-auth:
+    manifest:
+    - configure.d/enable-password-auth
+    tags:
+    - config
+  00-domain-networking:
+    manifest:
+    - initialize.d/domain-networking
+    tags:
+    - startup
+    - config
+  gatk:
+    manifest:
+    - configure.d/install.sh
+    - resources/modulefile
+    tags:
+    - software
+  monitor-setup:
+    manifest:
+    - configure.d/monitor-setup
+    tags:
+    - config
+  torque:
+    manifest:
+    - initialize.d/enable-torque
+    tags:
+    - startup
+    - software
+  appliance-domain-setup:
+    manifest:
+    - start.d/appliance-domain-setup
+    tags:
+    - config
+  disable-hyperthreading:
+    manifest:
+    - initialize.d/disable-hyperthreading
+    tags:
+    - startup
+    - config
+  test:
+    manifest:
+    - configure.d/test
+    - fail.d/test
+    - initialize.d/test
+    - member-join.d/test
+    - member-leave.d/test
+    - node-started.d/test
+    - start.d/test
+    tags:
+    - startup
+  configure-ephemeral-disks:
+    manifest:
+    - configure.d/configure-ephemeral-disks
+    tags:
+    - config
+  site-depots:
+    manifest:
+    - initialize.d/install-site-depots
+    - initialize.d/share/site-depots/configure
+    tags:
+    - startup
+    - config
+  configure-discrete-volumes:
+    manifest:
+    - initialize.d/configure-volumes
+    tags:
+    - startup
+    - config
+  controller-setup:
+    manifest:
+    - configure.d/controller-setup
+    - member-join.d/handle-appliance
+    - member-leave.d/handle-appliance
+    tags:
+    - config
+  intel-parallel-studio-xe:
+    manifest:
+    - configure.d/run-installer.sh
+    - resources/modulefile
+    tags:
+    - software
+  pbspro:
+    manifest:
+    - initialize.d/enable-pbspro
+    tags:
+    - startup
+    - software
+  directory-setup:
+    manifest:
+    - configure.d/directory-setup
+    tags:
+    - config
+  slurm:
+    manifest:
+    - initialize.d/enable-slurm
+    tags:
+    - startup
+    - software
+  prime-depots:
+    manifest:
+    - start.d/download-and-install
+    tags:
+    - config
+  domain-networking:
+    manifest:
+    - initialize.d/domain-networking
+    tags:
+    - startup
+    - config
+  pgi:
+    manifest:
+    - configure.d/run-installer.sh
+    tags:
+    - software
+  gridscheduler:
+    manifest:
+    - initialize.d/enable-gridscheduler
+    tags:
+    - startup
+    - software
+  ellexusmistral:
+    manifest:
+    - configure.d/extract.sh
+    - resources/modulefile
+    tags:
+    - software
+  start-session:
+    manifest:
+    - node-started.d/start-session
+    tags:
+    - config
+  gatk-queue:
+    manifest:
+    - configure.d/install.sh
+    - resources/modulefile
+    tags:
+    - software
+  configure-docker:
+    manifest:
+    - configure.d/configure-docker
+    - start.d/start-docker
+    tags:
+    - software
+  configure-beegfs:
+    manifest:
+    - configure.d/configure-beegfs
+    - member-join.d/configure-beegfs
+    tags:
+    - software
+  openlava:
+    manifest:
+    - initialize.d/enable-openlava
+    tags:
+    - startup
+    - software
+  matlab:
+    manifest:
+    - configure.d/run-installer.sh
+    - resources/modulefile
+    tags:
+    - software
