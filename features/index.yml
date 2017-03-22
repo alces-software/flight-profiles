@@ -41,9 +41,8 @@ profiles:
     - config
   disable-hyperthreading:
     manifest:
-    - initialize.d/disable-hyperthreading
+    - configure.d/disable-hyperthreading
     tags:
-    - startup
     - config
   test:
     manifest:
