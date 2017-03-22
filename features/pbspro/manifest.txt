@@ -1,1 +1,1 @@
-initialize.d/enable-pbspro
+configure.d/enable-pbspro
