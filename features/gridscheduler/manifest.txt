@@ -1,1 +1,1 @@
-initialize.d/enable-gridscheduler
+configure.d/enable-gridscheduler
