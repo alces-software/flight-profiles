@@ -11,12 +11,14 @@ profiles:
     - configure.d/enable-password-auth
     tags:
     - config
+    - hidden
   00-domain-networking:
     manifest:
     - initialize.d/domain-networking
     tags:
     - startup
     - config
+    - hidden
   gatk:
     manifest:
     - configure.d/install.sh
@@ -28,6 +30,7 @@ profiles:
     - configure.d/monitor-setup
     tags:
     - config
+    - hidden
   torque:
     manifest:
     - initialize.d/enable-torque
@@ -39,6 +42,7 @@ profiles:
     - start.d/appliance-domain-setup
     tags:
     - config
+    - hidden
   disable-hyperthreading:
     manifest:
     - configure.d/disable-hyperthreading
@@ -55,6 +59,7 @@ profiles:
     - start.d/test
     tags:
     - startup
+    - hidden
   configure-ephemeral-disks:
     manifest:
     - configure.d/configure-ephemeral-disks
@@ -73,6 +78,7 @@ profiles:
     tags:
     - startup
     - config
+    - hidden
   controller-setup:
     manifest:
     - configure.d/controller-setup
@@ -80,6 +86,7 @@ profiles:
     - member-leave.d/handle-appliance
     tags:
     - config
+    - hidden
   intel-parallel-studio-xe:
     manifest:
     - configure.d/run-installer.sh
@@ -96,6 +103,7 @@ profiles:
     - configure.d/directory-setup
     tags:
     - config
+    - hidden
   slurm:
     manifest:
     - initialize.d/enable-slurm
@@ -107,12 +115,14 @@ profiles:
     - start.d/download-and-install
     tags:
     - config
+    - hidden
   domain-networking:
     manifest:
     - initialize.d/domain-networking
     tags:
     - startup
     - config
+    - hidden
   pgi:
     manifest:
     - configure.d/run-installer.sh
@@ -134,6 +144,7 @@ profiles:
     - node-started.d/start-session
     tags:
     - config
+    - hidden
   gatk-queue:
     manifest:
     - configure.d/install.sh
