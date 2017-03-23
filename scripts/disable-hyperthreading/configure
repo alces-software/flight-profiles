@@ -36,19 +36,8 @@ setup() {
     kernel_load
 }
 
-main() {
-    ruby_run <<RUBY
-require 'yaml'
-defaults_file = "${cw_ROOT}/etc/defaults.yml"
-defaults = (YAML.load_file(defaults_file) rescue {})
-defaults['cluster'] ||= {}
-defaults['cluster']['hyperthreading'] = 'disabled'
-File.write(defaults_file, defaults.to_yaml)
-RUBY
-    echo "Disabling hyperthreading via flag in ${cw_ROOT}/etc/defaults.yml"
-}
-
 setup
-require ruby
 
-main "$@"
+_ALCES="${cw_ROOT}"/bin/alces
+
+${_ALCES} configure hyperthreading disable
