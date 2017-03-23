@@ -95,8 +95,9 @@ profiles:
     - software
   pbspro:
     manifest:
-    - configure.d/enable-pbspro
+    - initialize.d/enable-pbspro
     tags:
+    - startup
     - software
   directory-setup:
     manifest:
