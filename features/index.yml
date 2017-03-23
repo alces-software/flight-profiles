@@ -131,8 +131,9 @@ profiles:
     - software
   gridscheduler:
     manifest:
-    - configure.d/enable-gridscheduler
+    - initialize.d/enable-gridscheduler
     tags:
+    - startup
     - software
   ellexusmistral:
     manifest:
