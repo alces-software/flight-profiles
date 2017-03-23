@@ -1,1 +1,1 @@
-configure.d/enable-torque
+initialize.d/enable-torque
