@@ -1,1 +1,1 @@
-configure.d/enable-slurm
+initialize.d/enable-slurm

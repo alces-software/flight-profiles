@@ -106,8 +106,9 @@ profiles:
     - hidden
   slurm:
     manifest:
-    - configure.d/enable-slurm
+    - initialize.d/enable-slurm
     tags:
+    - startup
     - software
   prime-depots:
     manifest:
