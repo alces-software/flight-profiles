@@ -5,7 +5,7 @@ rootDir = ARGV[0]
 
 profiles = {}
 
-Dir.entries(rootDir).select {|f| !File.directory? f}.each do |profile_name|
+Dir.entries(rootDir).select {|f| !File.directory? f}.sort.each do |profile_name|
   manifest_file = File.expand_path("#{profile_name}/manifest.txt", rootDir)
   tags_file = File.expand_path("#{profile_name}/tags.txt", rootDir)
 
