@@ -1,1 +1,1 @@
-configure.d/enable-openlava
+initialize.d/enable-openlava

@@ -166,8 +166,9 @@ profiles:
     - software
   openlava:
     manifest:
-    - configure.d/enable-openlava
+    - initialize.d/enable-openlava
     tags:
+    - startup
     - software
   matlab:
     manifest:
