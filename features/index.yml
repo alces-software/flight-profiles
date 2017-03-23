@@ -33,9 +33,8 @@ profiles:
     - hidden
   torque:
     manifest:
-    - initialize.d/enable-torque
+    - configure.d/enable-torque
     tags:
-    - startup
     - software
   appliance-domain-setup:
     manifest:
