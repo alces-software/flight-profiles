@@ -50,8 +50,9 @@ elif [ "$1" == "--legacy" ]; then
 else
     if [ "$branch" == "master" ]; then
         assert_unchanged
+        tag_prefix="$1"
         # we always tag master when pushed
-        tag=$prefix.$(date +%Y%m%d%H%M%S)
+        tag=$tag_prefix.$(date +%Y%m%d%H%M%S)
         git tag $tag && git push origin master && git push --tags
         if [ $? -gt 0 ]; then
             exit 1
