@@ -13,11 +13,6 @@ profiles:
     tags:
     - config
     - hidden
-  configure-add-users:
-    manifest:
-    - configure.d/addusers.sh
-    - configure.d/grouplist.cfg
-    - configure.d/userlist.cfg
   configure-beegfs:
     manifest:
     - configure.d/configure-beegfs
@@ -42,6 +37,11 @@ profiles:
     - configure.d/configure-ephemeral-disks
     tags:
     - config
+  configure-users:
+    manifest:
+    - configure.d/configure-users
+    - configure.d/grouplist.cfg
+    - configure.d/userlist.cfg
   controller-setup:
     manifest:
     - configure.d/controller-setup

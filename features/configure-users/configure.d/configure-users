@@ -1,0 +1,178 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+# Script: adduser.sh
+# Date: 04/04/17
+# Desc: Adds the users in userlist.cfg and groups in grouplist.cfg
+#
+# Preconditions:
+#   The list files must be stored in client s3-clusterware-bucket
+#     -> <s3-clusterware-bucket>/configure-add-users/userlist.cfg
+#     -> <s3-clusterware-bucket>/configure-add-users/grouplist.cfg
+#   Format for users:  username UID, primary_GID [, secondary_GID ...]
+#   Format for groups: groupname, GID
+#   Secondary groups must be included in grouplist.cfg
+#
+# NOTE:
+#   The primary group will be made automatically if not included
+#   Blank and lines starting with '#' in the list files are ignored
+#==============================================================================
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Sets credentials for connecting to S3
+_set_s3_configuration() {
+  files_load_config cluster-customizer
+  s3cfg="$(mktemp /tmp/cluster-customizer.s3cfg.XXXXXXXX)"
+  cat <<EOF > "${s3cfg}"
+[default]
+access_key = "${cw_CLUSTER_CUSTOMIZER_access_key_id}"
+secret_key = "${cw_CLUSTER_CUSTOMIZER_secret_access_key}"
+security_token = ""
+use_https = True
+check_ssl_certificate = True
+EOF
+}
+
+
+# Pulls the user and groups list from client's S3 bucket
+_retrieve_list_files() {
+  user_file="$(mktemp /tmp/cluster-customizer.user-list.XXXXXXXX)"
+  group_file="$(mktemp /tmp/cluster-customizer.group-list.XXXXXXXX)"
+  if [ -n "${cw_CLUSTER_CUSTOMIZER_bucket}" ]; then
+    _pull_files "${cw_CLUSTER_CUSTOMIZER_bucket}" "-c ${s3cfg}"
+  elif network_is_ec2; then
+    _pull_files "s3://alces-flight-$(network_ec2_hashed_account)"
+  else
+    echo "ERROR: Clusterware s3 bucket has not been set" >&2
+    exit 1
+  fi
+}
+
+_pull_files() {
+  s3_user_file=$1/configure-add-users/userlist.cfg
+  s3_group_file=$1/configure-add-users/grouplist.cfg
+  shift 1
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd $@ --force get $s3_user_file $user_file 2>&1 >/dev/null)
+  if [[ "$?" -ne 0 ]]; then
+    echo "ERROR: Could not locate user list: $out" >&2
+    exit 1
+  fi
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd $@ --force get $s3_group_file $group_file 2>&1 >/dev/null)
+  if [[ "$?" -ne 0 ]]; then
+    echo "ERROR: Could not locate group list: $out" >&2
+    exit 1
+  fi
+}
+
+# Reads the groups from the list
+_add_groups_from_list() {
+  delim="\s*,\s*"
+  while read -r line || [[ -n "$line" ]]; do
+    #Validates input
+    regex="^[a-z][-a-z0-9]*$delim[0-9]+$"
+    if [[ "$line" =~ $regex ]]; then
+      _add_group $(echo $line | sed "s/$delim/ /g")
+    elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
+      echo "ERROR: Unrecognised group format: $line" 1>&2
+      exit 1
+    fi
+  done < $group_file
+}
+
+# Reads the users from the list
+_add_users_from_list() {
+  delim="\s*,\s*"
+  while read -r line || [[ -n "$line" ]]; do
+    # Validates input
+    regex="^[a-z][-a-z0-9]*($delim[0-9]+)+$"
+    if [[ "$line" =~ $regex ]]; then
+      _add_user $(echo $line | sed "s/$delim/ /g")
+    elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
+      echo "ERROR: Unrecognised user format: $line" 1>&2
+      showHelp=true
+    fi
+  done < $user_file
+}
+
+# Adds group ($1 groupname, $2 gid)
+_add_group() {
+  local groupname gid
+  groupname=$1
+  gid=$2
+
+  out=$(groupadd -g $gid $groupname 2>&1)
+  if [[ "$?" -ne 0 ]]; then
+    echo "ERROR: Could not add group $gid, $groupname" >&2
+    showHelp=true
+  fi
+}
+
+# Adds user ($1 username, $2 uid, $3 gid, $4+ secondary gids)
+_add_user() {
+  local user uid gid
+  username=$1
+  uid=$2
+  gid=$3
+  shift 3
+
+  # Adds the user (and creates primary group if it doesn't exists)
+  if [[ -z "$gid" ]]; then
+    getent group $uid >/dev/null || addGroupHelper $username $uid
+    out=$(useradd -u $uid -g $uid)
+  else
+    getent group $gid >/dev/null || addGroupHelper $username $gid
+    out=$(useradd -u $uid -g $gid $username 2>&1)
+  fi
+  if [[ "$?" -ne 0 ]]; then
+    echo "ERROR: Could not add user $username, $out" >&2
+    showHelp=true
+  fi
+
+  # Adds user to additional groups
+  if [[ "$#" -ne 0 ]]; then
+    out=$(usermod -aG $@ $username 2>&1)
+    if [[ "$?" -ne 0 ]]; then
+      echo "ERROR: Could not add $username (user) to $@ (group), $out" >&2
+      showHelp=true
+    fi
+  fi
+}
+
+# Deletes temporary files
+_delete_tmp() {
+  rm -f "$s3cfg"
+  rm -f "$user_file"
+  rm -f "$group_file"
+}
+
+# Main running code
+main() {
+  _set_s3_configuration
+  _retrieve_list_files
+  _add_groups_from_list
+  _add_users_from_list
+  _delete_tmp
+}
+
+require files
+require network
+main
