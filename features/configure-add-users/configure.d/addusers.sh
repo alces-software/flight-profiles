@@ -81,6 +81,9 @@ if [ -n "${cw_CLUSTER_CUSTOMIZER_bucket}" ]; then
     echo "ERROR: Could not locate group list: $out" >&2
     showHelp=true
   fi
+else
+  echo "ERROR: Clusterware s3 bucket has not been set" >&2
+  showHelp=true
 fi
 
 # Adds group ($1 groupname, $2 gid)
