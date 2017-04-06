@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
 #
 # This file/package is part of Alces Clusterware.
 #
@@ -20,7 +20,6 @@
 # For more information on the Alces Clusterware, please visit:
 # https://github.com/alces-software/clusterware
 #==============================================================================
-# Script: adduser.sh
 # Date: 04/04/17
 # Desc: Adds the users in userlist.cfg and groups in grouplist.cfg
 #
@@ -41,8 +40,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Sets credentials for connecting to S3
 _set_s3_configuration() {
   files_load_config cluster-customizer
-  s3cfg="$(mktemp /tmp/cluster-customizer.s3cfg.XXXXXXXX)"
-  cat <<EOF > "${s3cfg}"
+  _S3CFG="$(mktemp /tmp/cluster-customizer.s3cfg.XXXXXXXX)"
+  cat <<EOF > "${_S3CFG}"
 [default]
 access_key = "${cw_CLUSTER_CUSTOMIZER_access_key_id}"
 secret_key = "${cw_CLUSTER_CUSTOMIZER_secret_access_key}"
@@ -55,10 +54,10 @@ EOF
 
 # Pulls the user and groups list from client's S3 bucket
 _retrieve_list_files() {
-  user_file="$(mktemp /tmp/cluster-customizer.user-list.XXXXXXXX)"
-  group_file="$(mktemp /tmp/cluster-customizer.group-list.XXXXXXXX)"
+  USER_FILE="$(mktemp /tmp/cluster-customizer.user-list.XXXXXXXX)"
+  GROUP_FILE="$(mktemp /tmp/cluster-customizer.group-list.XXXXXXXX)"
   if [ -n "${cw_CLUSTER_CUSTOMIZER_bucket}" ]; then
-    _pull_files "${cw_CLUSTER_CUSTOMIZER_bucket}" "-c ${s3cfg}"
+    _pull_files "${cw_CLUSTER_CUSTOMIZER_bucket}"
   elif network_is_ec2; then
     _pull_files "s3://alces-flight-$(network_ec2_hashed_account)"
   else
@@ -68,15 +67,14 @@ _retrieve_list_files() {
 }
 
 _pull_files() {
-  s3_user_file=$1/configure-add-users/userlist.cfg
-  s3_group_file=$1/configure-add-users/grouplist.cfg
-  shift 1
-  out=$(${cw_ROOT}/opt/s3cmd/s3cmd $@ --force get $s3_user_file $user_file 2>&1 >/dev/null)
+  local bucket
+  bucket=$1
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/userlist.cfg $USER_FILE 2>&1 >/dev/null)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not locate user list: $out" >&2
     exit 1
   fi
-  out=$(${cw_ROOT}/opt/s3cmd/s3cmd $@ --force get $s3_group_file $group_file 2>&1 >/dev/null)
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/grouplist.cfg $GROUP_FILE 2>&1 >/dev/null)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not locate group list: $out" >&2
     exit 1
@@ -95,7 +93,7 @@ _add_groups_from_list() {
       echo "ERROR: Unrecognised group format: $line" 1>&2
       exit 1
     fi
-  done < $group_file
+  done < $GROUP_FILE
 }
 
 # Reads the users from the list
@@ -108,9 +106,9 @@ _add_users_from_list() {
       _add_user $(echo $line | sed "s/$delim/ /g")
     elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
       echo "ERROR: Unrecognised user format: $line" 1>&2
-      showHelp=true
+      exit 1
     fi
-  done < $user_file
+  done < $USER_FILE
 }
 
 # Adds group ($1 groupname, $2 gid)
@@ -121,8 +119,8 @@ _add_group() {
 
   out=$(groupadd -g $gid $groupname 2>&1)
   if [[ "$?" -ne 0 ]]; then
-    echo "ERROR: Could not add group $gid, $groupname" >&2
-    showHelp=true
+    echo "ERROR: Could not add group $gid, $out" >&2
+    exit 1
   fi
 }
 
@@ -136,15 +134,15 @@ _add_user() {
 
   # Adds the user (and creates primary group if it doesn't exists)
   if [[ -z "$gid" ]]; then
-    getent group $uid >/dev/null || addGroupHelper $username $uid
+    getent group $uid >/dev/null || _add_group $username $uid
     out=$(useradd -u $uid -g $uid)
   else
-    getent group $gid >/dev/null || addGroupHelper $username $gid
+    getent group $gid >/dev/null || _add_group $username $gid
     out=$(useradd -u $uid -g $gid $username 2>&1)
   fi
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not add user $username, $out" >&2
-    showHelp=true
+    exit 1
   fi
 
   # Adds user to additional groups
@@ -152,16 +150,16 @@ _add_user() {
     out=$(usermod -aG $@ $username 2>&1)
     if [[ "$?" -ne 0 ]]; then
       echo "ERROR: Could not add $username (user) to $@ (group), $out" >&2
-      showHelp=true
+      exit 1
     fi
   fi
 }
 
 # Deletes temporary files
 _delete_tmp() {
-  rm -f "$s3cfg"
-  rm -f "$user_file"
-  rm -f "$group_file"
+  rm -f "$_S3CFG"
+  rm -f "$USER_FILE"
+  rm -f "$GROUP_FILE"
 }
 
 # Main running code
