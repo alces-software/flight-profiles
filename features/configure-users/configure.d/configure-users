@@ -35,8 +35,6 @@
 #   The primary group will be made automatically if not included
 #   Blank and lines starting with '#' in the list files are ignored
 #==============================================================================
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 # Sets credentials for connecting to S3
 _set_s3_configuration() {
   files_load_config cluster-customizer
@@ -54,8 +52,8 @@ EOF
 
 # Pulls the user and groups list from client's S3 bucket
 _retrieve_list_files() {
-  USER_FILE="$(mktemp /tmp/cluster-customizer.user-list.XXXXXXXX)"
-  GROUP_FILE="$(mktemp /tmp/cluster-customizer.group-list.XXXXXXXX)"
+  _USER_FILE="$(mktemp /tmp/cluster-customizer.user-list.XXXXXXXX)"
+  _GROUP_FILE="$(mktemp /tmp/cluster-customizer.group-list.XXXXXXXX)"
   if [ -n "${cw_CLUSTER_CUSTOMIZER_bucket}" ]; then
     _pull_files "${cw_CLUSTER_CUSTOMIZER_bucket}"
   elif network_is_ec2; then
@@ -67,14 +65,14 @@ _retrieve_list_files() {
 }
 
 _pull_files() {
-  local bucket
+  local bucket out
   bucket=$1
-  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/userlist.cfg $USER_FILE 2>&1 >/dev/null)
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/userlist.cfg $_USER_FILE 2>&1 >/dev/null)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not locate user list: $out" >&2
     exit 1
   fi
-  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/grouplist.cfg $GROUP_FILE 2>&1 >/dev/null)
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/grouplist.cfg $_GROUP_FILE 2>&1 >/dev/null)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not locate group list: $out" >&2
     exit 1
@@ -83,6 +81,7 @@ _pull_files() {
 
 # Reads the groups from the list
 _add_groups_from_list() {
+  local delim regex line
   delim="\s*,\s*"
   while read -r line || [[ -n "$line" ]]; do
     #Validates input
@@ -93,11 +92,12 @@ _add_groups_from_list() {
       echo "ERROR: Unrecognised group format: $line" 1>&2
       exit 1
     fi
-  done < $GROUP_FILE
+  done < $_GROUP_FILE
 }
 
 # Reads the users from the list
 _add_users_from_list() {
+  local delim regex line
   delim="\s*,\s*"
   while read -r line || [[ -n "$line" ]]; do
     # Validates input
@@ -108,67 +108,71 @@ _add_users_from_list() {
       echo "ERROR: Unrecognised user format: $line" 1>&2
       exit 1
     fi
-  done < $USER_FILE
+  done < $_USER_FILE
 }
 
 # Adds group ($1 groupname, $2 gid)
 _add_group() {
-  local groupname gid
+  local groupname gid out
   groupname=$1
   gid=$2
 
   out=$(groupadd -g $gid $groupname 2>&1)
   if [[ "$?" -ne 0 ]]; then
-    echo "ERROR: Could not add group $gid, $out" >&2
-    exit 1
+    echo "ERROR: Could not add group $groupname, $out" >&2
+    _EXIT_CODE=1
   fi
 }
 
 # Adds user ($1 username, $2 uid, $3 gid, $4+ secondary gids)
 _add_user() {
-  local user uid gid
+  local username uid gid gid2 out
   username=$1
   uid=$2
   gid=$3
   shift 3
 
-  # Adds the user (and creates primary group if it doesn't exists)
+  # Sets gid to be uid if not included
   if [[ -z "$gid" ]]; then
-    getent group $uid >/dev/null || _add_group $username $uid
-    out=$(useradd -u $uid -g $uid)
-  else
-    getent group $gid >/dev/null || _add_group $username $gid
-    out=$(useradd -u $uid -g $gid $username 2>&1)
+    gid=$uid
   fi
+
+  # Adds the user (and creates primary group if it doesn't exists)
+  getent group $gid >/dev/null || _add_group $username $gid
+  out=$(useradd -u $uid -g $gid $username 2>&1)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not add user $username, $out" >&2
-    exit 1
+    _EXIT_CODE=1
   fi
 
   # Adds user to additional groups
   if [[ "$#" -ne 0 ]]; then
-    out=$(usermod -aG $@ $username 2>&1)
-    if [[ "$?" -ne 0 ]]; then
-      echo "ERROR: Could not add $username (user) to $@ (group), $out" >&2
-      exit 1
-    fi
+    for gid2 in $@; do
+      out=$(usermod -aG $gid2 $username 2>&1)
+      if [[ "$?" -ne 0 ]]; then
+        echo "ERROR: Could not add $username (user) to $@ (group), $out" >&2
+        _EXIT_CODE=1
+      fi
+    done
   fi
 }
 
 # Deletes temporary files
-_delete_tmp() {
+_delete_tmp_files() {
   rm -f "$_S3CFG"
-  rm -f "$USER_FILE"
-  rm -f "$GROUP_FILE"
+  rm -f "$_USER_FILE"
+  rm -f "$_GROUP_FILE"
 }
 
 # Main running code
 main() {
+  _EXIT_CODE=0
   _set_s3_configuration
   _retrieve_list_files
   _add_groups_from_list
   _add_users_from_list
-  _delete_tmp
+  _delete_tmp_files
+  exit $_EXIT_CODE
 }
 
 require files
