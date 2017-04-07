@@ -59,8 +59,9 @@ _retrieve_list_files() {
   elif network_is_ec2; then
     _pull_files "s3://alces-flight-$(network_ec2_hashed_account)"
   else
-    echo "ERROR: Clusterware s3 bucket has not been set" >&2
-    exit 1
+    echo "FATAL: Clusterware s3 bucket has not been set" >&2
+    _EXIT_CODE=1
+    _exit
   fi
 }
 
@@ -69,13 +70,15 @@ _pull_files() {
   bucket=$1
   out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/userlist.cfg $_USER_FILE 2>&1 >/dev/null)
   if [[ "$?" -ne 0 ]]; then
-    echo "ERROR: Could not locate user list: $out" >&2
-    exit 1
+    echo "FATAL: Could not locate user list: $out" >&2
+    _EXIT_CODE=2
+    _exit
   fi
   out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/grouplist.cfg $_GROUP_FILE 2>&1 >/dev/null)
   if [[ "$?" -ne 0 ]]; then
-    echo "ERROR: Could not locate group list: $out" >&2
-    exit 1
+    echo "FATAL: Could not locate group list: $out" >&2
+    _EXIT_CODE=2
+    _exit
   fi
 }
 
@@ -90,7 +93,7 @@ _add_groups_from_list() {
       _add_group $(echo $line | sed "s/$delim/ /g")
     elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
       echo "ERROR: Unrecognised group format: $line" 1>&2
-      exit 1
+      _EXIT_CODE=3
     fi
   done < $_GROUP_FILE
 }
@@ -106,7 +109,7 @@ _add_users_from_list() {
       _add_user $(echo $line | sed "s/$delim/ /g")
     elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
       echo "ERROR: Unrecognised user format: $line" 1>&2
-      exit 1
+      _EXIT_CODE=4
     fi
   done < $_USER_FILE
 }
@@ -120,13 +123,13 @@ _add_group() {
   out=$(groupadd -g $gid $groupname 2>&1)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not add group $groupname, $out" >&2
-    _EXIT_CODE=1
+    _EXIT_CODE=5
   fi
 }
 
 # Adds user ($1 username, $2 uid, $3 gid, $4+ secondary gids)
 _add_user() {
-  local username uid gid gid2 out
+  local username uid gid out
   username=$1
   uid=$2
   gid=$3
@@ -142,26 +145,31 @@ _add_user() {
   out=$(useradd -u $uid -g $gid $username 2>&1)
   if [[ "$?" -ne 0 ]]; then
     echo "ERROR: Could not add user $username, $out" >&2
-    _EXIT_CODE=1
+    _EXIT_CODE=6
   fi
 
   # Adds user to additional groups
-  if [[ "$#" -ne 0 ]]; then
-    for gid2 in $@; do
-      out=$(usermod -aG $gid2 $username 2>&1)
-      if [[ "$?" -ne 0 ]]; then
-        echo "ERROR: Could not add $username (user) to $@ (group), $out" >&2
-        _EXIT_CODE=1
-      fi
-    done
-  fi
+  for gid in $@; do
+    out=$(usermod -aG $gid $username 2>&1)
+    if [[ "$?" -ne 0 ]]; then
+      echo "ERROR: Could not add $username (user) to $gid (group), $out" >&2
+      _EXIT_CODE=7
+    fi
+  done
 }
 
-# Deletes temporary files
-_delete_tmp_files() {
-  rm -f "$_S3CFG"
-  rm -f "$_USER_FILE"
-  rm -f "$_GROUP_FILE"
+# Teardown and exit
+_exit() {
+  if [[ "$_EXIT_CODE" -eq "0" ]]; then
+    rm -f "$_S3CFG"
+    rm -f "$_USER_FILE"
+    rm -f "$_GROUP_FILE"
+  else
+    echo "S3 config file is: $_S3CFG" >&2
+    echo "User file is: $_USER_FILE" >&2
+    echo "Group file is: $_GROUP_FILE" >&2
+  fi
+  exit $_EXIT_CODE
 }
 
 # Main running code
@@ -171,8 +179,7 @@ main() {
   _retrieve_list_files
   _add_groups_from_list
   _add_users_from_list
-  _delete_tmp_files
-  exit $_EXIT_CODE
+  _exit
 }
 
 require files
