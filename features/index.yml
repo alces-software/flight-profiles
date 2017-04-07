@@ -37,6 +37,11 @@ profiles:
     - configure.d/configure-ephemeral-disks
     tags:
     - config
+  configure-users:
+    manifest:
+    - configure.d/configure-users
+    - configure.d/grouplist.cfg
+    - configure.d/userlist.cfg
   controller-setup:
     manifest:
     - configure.d/controller-setup

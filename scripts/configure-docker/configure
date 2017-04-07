@@ -102,5 +102,8 @@ REPO
 
 setup
 require distro
+require files
+
+files_load_config --optional distro
 
 main "$@"
