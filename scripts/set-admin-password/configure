@@ -67,5 +67,6 @@ RUBY
 setup
 require files
 require ruby
+require distro
 
 main "$@"
