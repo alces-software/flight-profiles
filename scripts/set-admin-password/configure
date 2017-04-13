@@ -51,9 +51,16 @@ main() {
 
     admin_user=$(id -un 1000)
     echo "${admin_user}:${password}" | chpasswd
+    chage -d0 "${admin_user}"
+
+    # Disable use of PAM so users logging in with a valid SSH key
+    # aren't prompted to change the password.
+    sed -r -i -e 's/^#?UsePAM yes/UsePAM no/g' \
+        /etc/ssh/sshd_config
+    distro_restart_service sshd
 
     # Add password to signal.rc
-    signal_data="Admin Password=${password}"
+    signal_data="Initial password=${password}"
     ruby_run <<RUBY
 content = if File.exists?('${cw_ROOT}/etc/signal.rc')
   File.read('${cw_ROOT}/etc/signal.rc').gsub!(%(cw_SIGNAL_data="),%(cw_SIGNAL_data="${signal_data};))
