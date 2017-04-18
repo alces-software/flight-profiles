@@ -20,5 +20,29 @@
 # For more information on the Alces Clusterware, please visit:
 # https://github.com/alces-software/clusterware
 #==============================================================================
-sed -i -e 's/^PasswordAuthentication no/PasswordAuthentication yes/g' \
-    /etc/ssh/sshd_config
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+main() {
+    sed -i -e 's/^PasswordAuthentication no/PasswordAuthentication yes/g' \
+        /etc/ssh/sshd_config
+    distro_restart_service sshd
+}
+
+setup
+require distro
+
+main "$@"
