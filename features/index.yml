@@ -32,6 +32,9 @@ profiles:
     - start.d/start-docker
     tags:
     - software
+  configure-docker-mpi:
+    manifest:
+    - configure.d/configure-docker-mpi
   configure-ephemeral-disks:
     manifest:
     - configure.d/configure-ephemeral-disks
