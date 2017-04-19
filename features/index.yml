@@ -42,6 +42,8 @@ profiles:
     - configure.d/configure-users
     - configure.d/grouplist.cfg
     - configure.d/userlist.cfg
+    tags:
+    - config
   controller-setup:
     manifest:
     - configure.d/controller-setup
@@ -74,6 +76,26 @@ profiles:
     - resources/modulefile
     tags:
     - software
+  enginframe-2015.1:
+    manifest:
+    - configure.d/install-enginframe
+    - resources/alces-flight-www/etc/server-https.d/enginframe.conf
+    - resources/alces-flight-www/resource/enginframe/config.yml
+    - resources/alces-flight-www/resource/enginframe/htdocs/img/resource.png
+    - resources/efinstall.config
+    - start.d/start-enginframe
+    tags:
+    - software
+  enginframe-2017.0:
+    manifest:
+    - configure.d/install-enginframe
+    - resources/alces-flight-www/etc/server-https.d/enginframe.conf
+    - resources/alces-flight-www/resource/enginframe/config.yml
+    - resources/alces-flight-www/resource/enginframe/htdocs/img/resource.png
+    - resources/efinstall.config
+    - start.d/start-enginframe
+    tags:
+    - software
   gatk:
     manifest:
     - configure.d/install.sh
@@ -98,6 +120,9 @@ profiles:
     - resources/modulefile
     tags:
     - software
+  launch-compat:
+    manifest:
+    - configure.d/account-bucket-setup
   matlab:
     manifest:
     - configure.d/run-installer.sh
@@ -136,6 +161,12 @@ profiles:
   prime-depots:
     manifest:
     - start.d/download-and-install
+    tags:
+    - config
+    - hidden
+  set-admin-password:
+    manifest:
+    - configure.d/set-admin-password
     tags:
     - config
     - hidden
