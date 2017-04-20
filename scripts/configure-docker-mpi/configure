@@ -68,6 +68,7 @@ setup
 require action
 require distro
 require files
+require process
 
 files_load_config instance config/cluster
 
