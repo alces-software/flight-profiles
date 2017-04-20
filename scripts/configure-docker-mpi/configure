@@ -57,7 +57,9 @@ EOF
   distro_restart_service docker
 
   if [[ "${cw_INSTANCE_role}" == "master" ]]; then
+    sleep 5  # Magic sleep to let Docker finish restarting
     docker run -d -p 8500:8500 -h consul --name consul progrium/consul -server -bootstrap
+    sleep 5 # Magic sleep to let consol wake up
     docker network create -d overlay gridware-mpi
     # TODO - specify a subnet for docker to use
   fi
