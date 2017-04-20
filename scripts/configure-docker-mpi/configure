@@ -75,7 +75,7 @@ files_load_config instance config/cluster
 r=$(type -p docker)
 if [ $? != 0 -o ! -x "$r" ]; then
     action_die "unable to locate Docker installation"
-elif ! process_reexec_sg docker --plain "$@"; then
+elif ! id 1000 | grep -q -e '(docker)'; then
    action_die "unable to find Docker group"
 fi
 
