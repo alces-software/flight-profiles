@@ -1,0 +1,82 @@
+#%Module1.0#####################################################################
+##
+## Alces HPC Software Stack - Compiler module file
+## Copyright (c) 2016 Alces Software Ltd
+##
+## path: apps/ellexusmistral
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+        source $::env(MODULES_ALCES_TCL)
+    } else {
+        # compatibility mode for module use without availability of Alces tools
+        proc ::process {body} { eval $body }
+        proc ::depend {module {version ""} {_ ""}} {
+            set req [regsub {\-} $module {/}]/$version
+            if { [catch { prereq $req }] } {
+                puts stderr "Could not satisfy prereq: $req"
+                break
+            }
+        }
+        proc ::alces {_ module} { return $module }
+        proc ::search {_ _ _} { }
+    }
+}
+
+proc ModulesHelp { } {
+    puts stderr "
+               ============ellexusmistral============
+                        Ellexus Mistral v2.9.4
+               ======================================
+
+This module sets up your environment for the use of the
+'ellexus mistral' service. This module sets up version 'v2.9.4'
+of the service in conjunction with the 'ellexus mistral' feature
+profile available through Alces Clusterware.
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+https://www.ellexus.com/products/mistral-io-profiling-shared-storage-load-balancing/
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show services/ellexusmistral
+
+"
+}
+
+set     app     ellexusmistral
+set     version 2.9.4
+set     appcaps ELLEXUSMISTRAL
+set     appdir  /opt/apps/ellexusmistral/2.9.4
+
+module-whatis   "
+
+            Title: ellexusmistral
+          Summary: Monitor application I/O and I/O performance across the cluster in order to identify rogue jobs and hotspots
+            Group: Alces/Apps
+              URL: https://www.ellexus.com/products/mistral-io-profiling-shared-storage-load-balancing/ 
+
+             Name: ellexusmistral
+          Version: 2.9.4
+           Module: [alces pretty apps/ellexusmistral]
+      Module path: /opt/apps/etc/modules/apps/ellexusmistral
+     Package path: /opt/apps/ellexusmistral
+
+For further information, execute:
+
+\tmodule help apps/ellexusmistral
+"
+
+prepend-path PATH ${appdir}
+setenv ${appcaps} ${appdir}
+setenv ${appcaps}DIR ${appdir}
+setenv ${appcaps}LICENSE ${appdir}/license
+setenv MISTRAL_RLM_LICENSE ${appdir}/license/ellexusmistral-license.lic
