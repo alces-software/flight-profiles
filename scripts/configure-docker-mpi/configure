@@ -49,6 +49,7 @@ main() {
   if [ -z "${master_address}" ]; then
     action_die "No master IP specified in config/cluster/config.rc, cannot configure MPI Docker"
   fi
+  mkdir -p /etc/docker
   cat <<EOF > "/etc/docker/daemon.json"
 {
 "cluster-store": "consul://${cw_CLUSTER_master}:8500"
