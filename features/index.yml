@@ -7,6 +7,14 @@ profiles:
     - startup
     - config
     - hidden
+  ansys-fluent:
+    manifest:
+    - configure.d/install.sh
+    - resources/modulefile
+  ansys-fluids:
+    manifest:
+    - configure.d/extract.sh
+    - resources/modulefile
   appliance-domain-setup:
     manifest:
     - start.d/appliance-domain-setup

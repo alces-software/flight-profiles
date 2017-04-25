@@ -100,7 +100,7 @@ EOF
 
 _unpack_tarball() {
         mkdir -p ${_WORKDIR}/ansys-fluent
-	tar -xvf $packagepath --directory ${_WORKDIR}/ansys-fluent
+	tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/ansys-fluent
 	
 }
 
@@ -125,7 +125,6 @@ _install_app() {
     fi
     if [ -f ${_WORKDIR}/${_PACKAGE} -a -f ${_WORKDIR}/${_LICENSE} ]; then
         _install_prereqs
-        _setup_users
         _unpack_tarball
         if _execute_installer; then
             if [ "${fetched_from_s3}" ]; then
@@ -162,7 +161,7 @@ require serviceware
 _VENDOR=Ansys
 _APP_NAME=Fluent
 _VENDOR_EMAIL=info@ansys.com
-_APP=fluent
+_APP=ansys-fluent
 _PACKAGE=FLUIDS_170_LINX64.tar
 _LICENSE=fluent-license.lic
 _WORKDIR=/tmp
