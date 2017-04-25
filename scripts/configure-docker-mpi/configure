@@ -52,7 +52,7 @@ main() {
   mkdir -p /etc/docker
   cat <<EOF > "/etc/docker/daemon.json"
 {
-"cluster-store": "consul://${cw_CLUSTER_master}:8500"
+"cluster-store": "consul://${master_address}:8500"
 }
 EOF
   distro_restart_service docker
