@@ -37,32 +37,22 @@ setup() {
 }
 
 main() {
-  local master_address
+  local token
   if [[ "${cw_INSTANCE_role}" == "master" ]]; then
-    master_address="localhost"
-  else
-    files_load_config --optional config config/cluster
-    master_address=${cw_CLUSTER_master}
-  fi
+    mkdir -p /opt/gridware/docker/swarm
 
-
-  if [ -z "${master_address}" ]; then
-    action_die "No master IP specified in config/cluster/config.rc, cannot configure MPI Docker"
-  fi
-  mkdir -p /etc/docker
-  cat <<EOF > "/etc/docker/daemon.json"
-{
-"cluster-store": "consul://${master_address}:8500"
-}
-EOF
-  distro_restart_service docker
-
-  if [[ "${cw_INSTANCE_role}" == "master" ]]; then
-    sleep 5  # Magic sleep to let Docker finish restarting
-    docker run -d -p 8500:8500 -h consul --name consul progrium/consul -server -bootstrap
-    sleep 5 # Magic sleep to let consol wake up
-    docker network create -d overlay gridware-mpi
+    docker swarm init
+    docker swarm join-token -q worker > /opt/gridware/docker/swarm/token
+    docker network create -d overlay --attachable gridware-mpi
     # TODO - specify a subnet for docker to use
+  else
+    if [ -f /opt/gridware/docker/swarm/token ]; then
+      files_load_config --optional config config/cluster
+      token=$(cat /opt/gridware/docker/swarm/token)
+      docker swarm join --token "${token}" "${cw_CLUSTER_master}:2377"
+    else
+      action_die "No Swarm token found at /opt/gridware/docker/swarm/token - cannot continue."
+    fi
   fi
 
 }
@@ -71,7 +61,6 @@ setup
 require action
 require distro
 require files
-require process
 
 files_load_config instance config/cluster
 
