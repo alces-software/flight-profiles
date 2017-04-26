@@ -7,6 +7,14 @@ profiles:
     - startup
     - config
     - hidden
+  ansys-fluent-v170:
+    manifest:
+    - configure.d/install.sh
+    - resources/Ansys Fluent v170.desktop
+    - resources/fluent_launch.sh
+    - resources/modulefile
+    tags:
+    - software
   appliance-domain-setup:
     manifest:
     - start.d/appliance-domain-setup
