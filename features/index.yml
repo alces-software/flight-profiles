@@ -123,6 +123,9 @@ profiles:
   launch-compat:
     manifest:
     - configure.d/account-bucket-setup
+    tags:
+    - config
+    - hidden
   matlab:
     manifest:
     - configure.d/run-installer.sh
