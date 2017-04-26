@@ -40,7 +40,7 @@ main() {
     local bucket
     bucket="${cw_CLUSTER_CUSTOMIZER_bucket#s3://}"
     echo "cw_SYNC_bucket=\"${bucket}\"" >> "${cw_ROOT}"/etc/sync.rc
-    ${_S3CMD} mb s3://${bucket}
+    ${_S3CMD} --region "${cw_INSTANCE_aws_region:-eu-west-1}" mb s3://${bucket}
 }
 
 setup
@@ -49,5 +49,6 @@ require files
 _S3CMD="${cw_ROOT}"/opt/s3cmd/s3cmd
 
 files_load_config cluster-customizer
+files_load_config instance-aws config/cluster
 
 main "$@"
