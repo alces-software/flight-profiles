@@ -126,6 +126,13 @@ profiles:
     tags:
     - config
     - hidden
+  launch-compat-apps:
+    manifest:
+    - initialize.d/rewrite-customizer-bucket-for-apps
+    tags:
+    - config
+    - hidden
+    - startup
   matlab:
     manifest:
     - configure.d/run-installer.sh
