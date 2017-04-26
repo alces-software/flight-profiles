@@ -13,6 +13,8 @@ profiles:
     - resources/Ansys Fluent v170.desktop
     - resources/fluent_launch.sh
     - resources/modulefile
+    tags:
+    - software
   ansys-fluids:
     manifest:
     - configure.d/extract.sh
