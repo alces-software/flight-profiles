@@ -115,8 +115,8 @@ _execute_installer() {
 
 _install_modulefile() {
         echo "Installing and Configuring modulefiles..."
-	mkdir -p /opt/apps/etc/modules/apps
-	cp ${_RESOURCES_DIR}/modulefile "/opt/apps/etc/modules/apps/${_APP}-${_APP_VER}"
+	mkdir -p /opt/apps/etc/modules/apps/${_APP}
+	cp ${_RESOURCES_DIR}/modulefile "/opt/apps/etc/modules/apps/${_APP}/${_APP_VER}"
 	if ! grep -q /opt/apps/etc/modules /opt/clusterware/etc/modulerc/modulespath; then
 		echo "/opt/apps/etc/modules" >> /opt/clusterware/etc/modulerc/modulespath
 	fi
