@@ -105,7 +105,7 @@ _unpack_tarball() {
 }
 
 _execute_installer() {
-	${_WORKDIR}/ansys-fluent/INSTALL -silent -install_dir ${_INSTALLDIR}/. -product_flag fluent
+	${_WORKDIR}/ansys-fluent/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent
 }
 
 _install_app() {
