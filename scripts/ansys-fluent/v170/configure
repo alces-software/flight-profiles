@@ -98,14 +98,25 @@ Ansys Fluent installation completed.
 EOF
 }
 
+_setup_logdir() {
+        mkdir -p ${_LOGDIR}
+	}
+
 _unpack_tarball() {
-        mkdir -p ${_WORKDIR}/ansys-fluent
-	tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/ansys-fluent
-	
-}
+        mkdir -p ${_WORKDIR}/${_APP}
+	tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/${_APP} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
+	}
 
 _execute_installer() {
-	${_WORKDIR}/ansys-fluent/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent
+	${_WORKDIR}/${_APP}/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent 2>&1 ${_LOGDIR}/${_APP}-${PPID}-install
+}
+
+_install_modulefile() {
+	mkdir -p /opt/apps/etc/modules/apps
+	cp ${_RESOURCES_DIR}/modulefile "/opt/apps/etc/modules/apps/${_APP}-${_APP_VER}"
+	if ! grep -q /opt/apps/etc/modules /opt/clusterware/etc/modulerc/modulespath; then
+		echo "/opt/apps/etc/modules" >> /opt/clusterware/etc/modulerc/modulespath
+	fi
 }
 
 _install_app() {
@@ -124,12 +135,14 @@ _install_app() {
         fetched_from_s3=true
     fi
     if [ -f ${_WORKDIR}/${_PACKAGE} -a -f ${_WORKDIR}/${_LICENSE} ]; then
+        _setup_logdir
         _install_prereqs
         _unpack_tarball
         if _execute_installer; then
             if [ "${fetched_from_s3}" ]; then
                 rm -f ${_WORKDIR}/${_PACKAGE} ${_WORKDIR}/${_LICENSE}
             fi
+	    _install_modulefile
             _show_completed_message
         else
             echo "WARNING: Ansys Fluent failed to install."
@@ -162,10 +175,13 @@ _VENDOR=Ansys
 _APP_NAME=Fluent
 _VENDOR_EMAIL=info@ansys.com
 _APP=ansys-fluent
+_APP_VER=v170
 _PACKAGE=FLUIDS_170_LINX64.tar
 _LICENSE=fluent-license.lic
 _WORKDIR=/tmp
+_LOGDIR=/var/log/clusterware/customizer/feature-${_APP}/${_APP_VER}
 _INSTALLDIR=/opt/apps/ansys/fluent/v170
+_APP_MODULE_PATH=/opt/apps/
 _RESOURCES_DIR="$(handler_dir)/../resources"
 
 main "$@"
