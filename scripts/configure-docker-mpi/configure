@@ -37,11 +37,13 @@ setup() {
 }
 
 main() {
-  local token
+  local master_ip token
   if [[ "${cw_INSTANCE_role}" == "master" ]]; then
     mkdir -p /opt/gridware/docker/swarm
 
-    docker swarm init
+    master_ip=$(network_get_iface_address "$(network_get_first_iface)")
+
+    docker swarm init --advertise-addr "${master_ip}"
     docker swarm join-token -q worker > /opt/gridware/docker/swarm/token
     docker network create -d overlay --attachable gridware-mpi
     # TODO - specify a subnet for docker to use
@@ -61,6 +63,7 @@ setup
 require action
 require distro
 require files
+require network
 
 files_load_config instance config/cluster
 
