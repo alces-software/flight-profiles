@@ -103,15 +103,18 @@ _setup_logdir() {
 	}
 
 _unpack_tarball() {
+	echo "Unpacking tarball ${_PACKAGE} ..."
         mkdir -p ${_WORKDIR}/${_APP}
 	tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/${_APP} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
 	}
 
 _execute_installer() {
-	${_WORKDIR}/${_APP}/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent 2>&1 ${_LOGDIR}/${_APP}-${PPID}-install
+        echo "Starting Ansys Fluent installer..."
+	${_WORKDIR}/${_APP}/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-install
 }
 
 _install_modulefile() {
+        echo "Installing and Configuring modulefiles..."
 	mkdir -p /opt/apps/etc/modules/apps
 	cp ${_RESOURCES_DIR}/modulefile "/opt/apps/etc/modules/apps/${_APP}-${_APP_VER}"
 	if ! grep -q /opt/apps/etc/modules /opt/clusterware/etc/modulerc/modulespath; then
