@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name[en_US]=Ansys Fluent v170
+GenericName=Ansys Fluent v170
+Terminal=true
+Exec=/opt/apps/ansys/fluent/v170/fluent_launch.sh
+Type=Application
+Icon=/opt/apps/ansys/fluent/v170/v170/RSM/Config/icons/AnsysLogo.png

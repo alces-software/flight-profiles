@@ -122,6 +122,16 @@ _install_modulefile() {
 	fi
 }
 
+_install_license() {
+	mkdir -p ${_INSTALLDIR}/license
+	cp ${_WORKDIR}/${_LICENSE} ${_INSTALLDIR}/${_LICENSE}
+}
+
+_install_shortcut() {
+	install -D -m 0755 "${_RESOURCES_DIR}/fluent_launch.sh" ${_INSTALLDIR}/fluent_launch.sh
+        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/root/Desktop/Ansys Fluent v170.desktop"
+}
+
 _install_app() {
     local bucket fetched_from_s3
     if [ ! -f ${_WORKDIR}/${_PACKAGE} -a ! -f ${_WORKDIR}/${_LICENSE} ]; then
@@ -145,6 +155,8 @@ _install_app() {
             if [ "${fetched_from_s3}" ]; then
                 rm -f ${_WORKDIR}/${_PACKAGE} ${_WORKDIR}/${_LICENSE}
             fi
+	    _install_license
+	    _install_shortcut
 	    _install_modulefile
             _show_completed_message
         else
