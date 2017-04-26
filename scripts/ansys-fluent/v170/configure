@@ -130,8 +130,8 @@ _install_license() {
 _install_shortcut() {
 	install -D -m 0755 "${_RESOURCES_DIR}/fluent_launch.sh" ${_INSTALLDIR}/fluent_launch.sh
 	_ADMIN_USER=`id -un 1000`
-	mkdir -p ${_ADMIN_USER}/Desktop
-        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/${_ADMIN_USER}/Desktop/Ansys Fluent v170.desktop"
+	mkdir -p /home/${_ADMIN_USER}/Desktop
+        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/home/${_ADMIN_USER}/Desktop/Ansys Fluent v170.desktop"
         install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/root/Desktop/Ansys Fluent v170.desktop"
 }
 
