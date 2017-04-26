@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+# Copyright (C) 2016-2017 Stephen F. Norledge and Alces Software Ltd.
 #
 # This file/package is part of Alces Clusterware.
 #
@@ -37,7 +37,7 @@ setup() {
 }
 
 main() {
-    local adminuser avails session_type
+    local adminuser avails session_type signal_data
     files_load_config instance config/cluster
     if [ "${cw_INSTANCE_role}" == "master" ]; then
         adminuser=$(id -un 1000)
@@ -48,12 +48,25 @@ main() {
             session_type="$(echo $avails | cut -f1 -d" ")"
         fi
         sessionid=$(sudo -u ${adminuser} "${_ALCES}" session start --terse ${session_type})
+        declare -A vnc
+        . "$(eval echo ~${adminuser})/.cache/clusterware/sessions/${sessionid}/metadata.vars.sh"
+        # Add session access data to signal.rc
+        signal_data="Session access URL=vnc://${adminuser}:${vnc[PASSWORD]}@${vnc[ACCESS_HOST]}:${vnc[PORT]};Session password=${vnc[PASSWORD]}"
+        ruby_run <<RUBY
+content = if File.exists?('${cw_ROOT}/etc/signal.rc')
+  File.read('${cw_ROOT}/etc/signal.rc').gsub!(%(cw_SIGNAL_data="),%(cw_SIGNAL_data="${signal_data};))
+else
+  %(cw_SIGNAL_data="${signal_data}")
+end
+File.write('${cw_ROOT}/etc/signal.rc', content, perm: 0600)
+RUBY
         echo "Started session for ${adminuser}: ${sessionid}"
     fi
 }
 
 setup
 require files
+require ruby
 
 _ALCES="${cw_ROOT}"/bin/alces
 main "$@"

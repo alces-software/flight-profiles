@@ -191,7 +191,7 @@ profiles:
     - software
   start-session:
     manifest:
-    - node-started.d/start-session
+    - start.d/start-session
     tags:
     - config
     - hidden
