@@ -53,12 +53,12 @@ EOF
 }
 
 _install_prereqs() {
-	#noop
-	sleep 1
+    #noop
+    sleep 1
 }
 
 _show_help() {
-          cat <<EOF
+    cat <<EOF
 ******************************************************************************
 
   Please download the ${_APP_NAME} installation file(s) from the
@@ -99,40 +99,44 @@ EOF
 }
 
 _setup_logdir() {
-        mkdir -p ${_LOGDIR}
-	}
+    mkdir -p ${_LOGDIR}
+}
 
 _unpack_tarball() {
-	echo "Unpacking tarball ${_PACKAGE} ..."
-        mkdir -p ${_WORKDIR}/${_APP}
-	tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/${_APP} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
-	}
+    echo "Unpacking tarball ${_PACKAGE} ..."
+    mkdir -p ${_WORKDIR}/${_APP}
+    tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/${_APP} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
+}
 
 _execute_installer() {
-        echo "Starting Ansys Fluent installer..."
-	${_WORKDIR}/${_APP}/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-install
+    echo "Starting Ansys Fluent installer..."
+    ${_WORKDIR}/${_APP}/INSTALL -silent -install_dir ${_INSTALLDIR}/. -fluent 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-install
 }
 
 _install_modulefile() {
-        echo "Installing and Configuring modulefiles..."
-	mkdir -p /opt/apps/etc/modules/apps/${_APP}
-	cp ${_RESOURCES_DIR}/modulefile "/opt/apps/etc/modules/apps/${_APP}/${_APP_VER}"
-	if ! grep -q /opt/apps/etc/modules /opt/clusterware/etc/modulerc/modulespath; then
-		echo "/opt/apps/etc/modules" >> /opt/clusterware/etc/modulerc/modulespath
-	fi
+    echo "Installing and Configuring modulefiles..."
+    mkdir -p /opt/apps/etc/modules/apps/${_APP}
+    cp ${_RESOURCES_DIR}/modulefile "/opt/apps/etc/modules/apps/${_APP}/${_APP_VER}"
+    if ! grep -q /opt/apps/etc/modules /opt/clusterware/etc/modulerc/modulespath; then
+        echo "/opt/apps/etc/modules" >> /opt/clusterware/etc/modulerc/modulespath
+    fi
 }
 
 _install_license() {
-	mkdir -p ${_INSTALLDIR}/license
-	cp ${_WORKDIR}/${_LICENSE} ${_INSTALLDIR}/${_LICENSE}
+    mkdir -p ${_INSTALLDIR}/license
+    cp ${_WORKDIR}/${_LICENSE} ${_INSTALLDIR}/${_LICENSE}
 }
 
 _install_shortcut() {
-	install -D -m 0755 "${_RESOURCES_DIR}/fluent_launch.sh" ${_INSTALLDIR}/fluent_launch.sh
-	_ADMIN_USER=`id -un 1000`
-	mkdir -p /home/${_ADMIN_USER}/Desktop
-        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/home/${_ADMIN_USER}/Desktop/Ansys Fluent v170.desktop"
-        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/root/Desktop/Ansys Fluent v170.desktop"
+    local admin_user
+    install -D -m 0755 "${_RESOURCES_DIR}/fluent_launch.sh" ${_INSTALLDIR}/fluent_launch.sh
+    admin_user=`id -un 1000`
+    mkdir -p /home/${admin_user}/Desktop
+    install -D -m 0755 -o ${admin_user} -g ${admin_user} \
+            "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" \
+            "/home/${admin_user}/Desktop/Ansys Fluent v170.desktop"
+    install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" \
+            "/root/Desktop/Ansys Fluent v170.desktop"
 }
 
 _install_app() {
@@ -158,9 +162,9 @@ _install_app() {
             if [ "${fetched_from_s3}" ]; then
                 rm -f ${_WORKDIR}/${_PACKAGE} ${_WORKDIR}/${_LICENSE}
             fi
-	    _install_license
-	    _install_shortcut
-	    _install_modulefile
+            _install_license
+            _install_shortcut
+            _install_modulefile
             _show_completed_message
         else
             echo "WARNING: Ansys Fluent failed to install."
@@ -176,8 +180,8 @@ main() {
     if [ "$role" == "master" ]; then
         _install_app
     else
-       echo "Unable to determine role for instance"
-       exit 1
+        echo "Unable to determine role for instance"
+        exit 1
     fi
 }
 
