@@ -39,9 +39,12 @@ setup() {
 
 main() {
   distro_start_service docker
+  sleep 5  # allow time for Docker to start up
+  handler_run_hook gridware-docker-exports
 }
 
 setup
 require distro
+require handler
 
 main "$@"
