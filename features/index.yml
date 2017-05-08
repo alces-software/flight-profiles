@@ -71,6 +71,11 @@ profiles:
     - configure.d/disable-hyperthreading
     tags:
     - config
+  disable-thp:
+    manifest:
+    - configure.d/disable-thp
+    tags:
+    - config
   domain-networking:
     manifest:
     - initialize.d/domain-networking
