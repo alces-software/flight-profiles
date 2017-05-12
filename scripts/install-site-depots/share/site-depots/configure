@@ -59,7 +59,7 @@ main() {
             . "${cw_ROOT}"/var/lib/gridware/depots/site/config.rc
             if [ "${cw_SITE_DEPOTS_default}" ]; then
                 for a in ${cw_SITE_DEPOTS_default}; do
-                    "${_ALCES}" gridware depot install $a
+                    "${_ALCES}" gridware depot --no-notify install $a
                 done
             fi
         fi
