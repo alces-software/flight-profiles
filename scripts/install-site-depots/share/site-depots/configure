@@ -43,10 +43,10 @@ main() {
     fi
 
     # retrieve additional depots to be added and install them in clusterware tree
-    bucket="s3://alces-flight-$(network_ec2_hashed_account)"
     mkdir -p "${cw_ROOT}"/var/lib/gridware/depots/site
 
     files_load_config --optional cluster-customizer
+    bucket="${cw_CLUSTER_CUSTOMIZER_bucket:-s3://alces-flight-$(network_ec2_hashed_account)}"
     export AWS_ACCESS_KEY_ID="${cw_CLUSTER_CUSTOMIZER_access_key_id}"
     export AWS_SECRET_ACCESS_KEY="${cw_CLUSTER_CUSTOMIZER_secret_access_key}"
 
@@ -70,6 +70,7 @@ setup
 
 require network
 require files
+require distro
 
 _S3CMD="${cw_ROOT}"/opt/s3cmd/s3cmd
 _ALCES="${cw_ROOT}"/bin/alces
