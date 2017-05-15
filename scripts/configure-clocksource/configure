@@ -36,21 +36,25 @@ setup() {
     kernel_load
 }
 
-main() {
+_clocksource_profile_load_from_master() {
     local temp_file
+    temp_file=$(mktemp /tmp/clocksource.XXXXXXXXX)
+    if wget -O $temp_file http://$cw_CLUSTER_master/customizer/cluster-clocksource.rc >/dev/null 2>&1
+        then
+        cp -f $temp_file $cw_ROOT/etc/cluster-clocksource.rc
+        chmod +r $cw_ROOT/etc/cluster-clocksource.rc
+        files_load_config cluster-clocksource
+    fi
+    rm -f $temp_file
+}
 
+main() {
+    files_load_config config config/cluster
     if ! clocksource_is_master_node; then
-        files_load_config config config/cluster
-        temp_file=$(mktemp /tmp/clocksource.XXXXXXXXX)
-        if wget -O $temp_file http://$cw_CLUSTER_master/customizer/cluster-clocksource.rc >/dev/null 2>&1
-            then
-            cp -f $temp_file $cw_ROOT/etc/cluster-clocksource.rc
-            chmod +r $cw_ROOT/etc/cluster-clocksource.rc
-        fi
-        rm -f $temp_file
+        _clocksource_profile_load_from_master  
     fi
     
-    if files_load_config --optional cluster-clocksource; then
+    if [ "$cw_CLUSTER_clocksource" ]; then
         clocksource_set $cw_CLUSTER_clocksource
     fi
 }
