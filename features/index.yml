@@ -27,6 +27,11 @@ profiles:
     - member-join.d/configure-beegfs
     tags:
     - software
+  configure-clocksource:
+    manifest:
+    - configure.d/configure-clocksource
+    tags:
+    - config
   configure-discrete-volumes:
     manifest:
     - initialize.d/configure-volumes
