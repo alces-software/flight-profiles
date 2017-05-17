@@ -25,8 +25,7 @@ Dir.entries(rootDir).select {|f| !File.directory? f}.sort.each do |profile_name|
       if !profile.key?('tags')
         profile['tags'] = []
         File.write(tags_file, "startup\n")
-      end
-      if !profile['tags'].include?('startup')
+      elsif !profile['tags'].include?('startup')
         # tags were specified but startup was not. We should fix that:
         File.open(tags_file, 'a') { |f| f.write("startup\n") }
         profile['tags'] << 'startup'
