@@ -20,7 +20,6 @@
 # For more information on the Alces Clusterware, please visit:
 # https://github.com/alces-software/clusterware
 #==============================================================================
-
 setup() {
     local a xdg_config
     IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
@@ -38,36 +37,14 @@ setup() {
 }
 
 main() {
-  local master_ip token
-  distro_start_service docker
-  sleep 5  # allow time for Docker to start up
-
-  files_load_config instance config/cluster
-
-  if [[ "${cw_INSTANCE_role}" == "master" ]]; then
-    mkdir -p /opt/gridware/docker/swarm
-
-    master_ip=$(network_get_iface_address "$(network_get_first_iface)")
-
-    docker swarm init --advertise-addr "${master_ip}" > /dev/null
-    docker swarm join-token -q worker > /opt/gridware/docker/swarm/token
-    docker network create -d overlay --attachable gridware-mpi > /dev/null
-    # TODO - specify a subnet for docker to use
-  else
-    if [ -f /opt/gridware/docker/swarm/token ]; then
-      files_load_config --optional config config/cluster
-      token=$(cat /opt/gridware/docker/swarm/token)
-      docker swarm join --token "${token}" "${cw_CLUSTER_master}:2377" > /dev/null
-    else
-      action_die "No Swarm token found at /opt/gridware/docker/swarm/token - cannot join swarm."
+    if network_is_ec2; then
+        bucket="s3://alces-flight-$(network_ec2_hashed_account)"
+        sed -i -e "s,cw_CLUSTER_CUSTOMIZER_bucket=.*,cw_CLUSTER_CUSTOMIZER_bucket=\"$bucket\",g" \
+            "${cw_ROOT}"/etc/cluster-customizer.rc
     fi
-  fi
-
-  handler_run_hook gridware-docker-exports
 }
 
 setup
-require distro
-require handler
+require network
 
 main "$@"
