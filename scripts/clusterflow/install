@@ -1,0 +1,96 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+_install_test_data() {
+    # Install the test data set
+    cd /opt/gridware/data
+    mkdir clusterflow
+    cd clusterflow
+    wget --progress=dot:giga https://s3-eu-west-1.amazonaws.com/packages.alces-software.com/gridware/%24data/clusterflow/ngi-rna_test_set.tar.bz2
+    tar xjf ngi-rna_test_set.tar.bz2
+    cd ngi-rna_test_set
+    # Required here, as /root/.modulerc doesn't yet exist and
+    # compatibility mode isn't definitely functional for all binary
+    # packages yet (was fixed in Clusterware 1.8.0).
+    cp "${cw_ROOT}"/etc/skel/modulerc /root/.modulerc
+    # Unset cw_ROOT to prevent Cluster Flow modulefile from performing
+    # configuration (we don't have compute nodes yet).
+    echo "unset ::env(cw_ROOT)" >> /root/.modulerc
+    # Needed to ensure /root/.modulerc can be located
+    export HOME=/root USER=root
+    eval $(${_MODULE} bash load apps/clusterflow)
+    cp $CLUSTERFLOWDIR/dist/clusterflow.config.example $CLUSTERFLOWDIR/dist/clusterflow.config
+    echo -e "1\nYeast\ntest\ntest\n$(pwd)\ny\ny" | cf --add_genome
+    rm -f /root/.modulerc $CLUSTERFLOWDIR/dist/clusterflow.config
+}
+
+_add_volatile_depot_repo() {
+    # Add the volatile depot repo if it doesn't yet exist
+    mkdir -p "${cw_ROOT}"/var/lib/gridware/depots/volatile/data/
+    if ! grep -q "var/lib/gridware/depots/volatile" "${cw_GRIDWARE_root}"/etc/gridware.yml; then
+        sed -e "/^:depot_repo_paths:/a \ - ${cw_ROOT}/var/lib/gridware/depots/volatile" \
+            -i "${cw_GRIDWARE_root}"/etc/gridware.yml
+    fi
+}
+
+_install_clusterflow() {
+    # Add the Cluster Flow depot to the volatile depot repo
+    curl https://s3-eu-west-1.amazonaws.com/packages.alces-software.com/depots/volatile/clusterflow.yml > \
+         "${cw_ROOT}"/var/lib/gridware/depots/volatile/data/clusterflow.yml
+    # Install the clusterflow depot
+    ${_ALCES} gridware depot --no-notify install clusterflow
+    eval $(${_MODULE} bash use ${cw_GRIDWARE_root}/clusterflow/${cw_DIST}/etc/modules)
+}
+
+main() {
+    _add_volatile_depot_repo
+    _install_clusterflow
+    _install_test_data
+}
+
+setup
+require files
+require distro
+require handler
+
+_ALCES="${cw_ROOT}"/bin/alces
+_MODULE="${cw_ROOT}"/opt/modules/bin/modulecmd
+
+files_load_config gridware
+
+handler_tee main "$@"
