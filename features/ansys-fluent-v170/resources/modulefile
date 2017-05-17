@@ -80,4 +80,4 @@ prepend-path LD_LIBRARY_PATH ${appdir}/v170/fluent/lib3.0/lnamd64/
 setenv ${appcaps} ${appdir}
 setenv ${appcaps}DIR ${appdir}
 setenv ${appcaps}LICENSE ${appdir}/license
-setenv LM_LICENSE_FILE ${appdir}/license/ansys-fluent-license.lic
+setenv ANSYSLMD_LICENSE_FILE 1055@login1
