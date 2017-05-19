@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name[en_US]=Ansys Fluent v181
+GenericName=Ansys Fluent v181
+Terminal=false
+Exec=/opt/apps/ansys/fluent/v181/fluent_launch.sh
+Type=Application
+Icon=/opt/apps/ansys/fluent/v181/v181/commonfiles/images/wb256x256.ico

@@ -15,6 +15,14 @@ profiles:
     - resources/modulefile
     tags:
     - software
+  ansys-fluent-v181:
+    manifest:
+    - configure.d/install.sh
+    - resources/Ansys Fluent v181.desktop
+    - resources/fluent_launch.sh
+    - resources/modulefile
+    tags:
+    - software
   appliance-domain-setup:
     manifest:
     - start.d/appliance-domain-setup
