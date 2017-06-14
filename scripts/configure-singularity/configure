@@ -44,7 +44,7 @@ main() {
     cd /tmp
     wget https://github.com/singularityware/singularity/releases/download/2.3/singularity-2.3.tar.gz
     
-    if [ "$checksum" != "$(md5sum singularity-2.3.tar.gz)" ] ; then
+    if [ "$checksum" != "$(md5sum singularity-2.3.tar.gz |awk '{print $1}')" ] ; then
         echo "Sorry, the downloaded tarball has a mismatching checksum"
         exit 1
     fi
