@@ -1,0 +1,239 @@
+---
+profiles:
+  00-domain-networking:
+    manifest:
+    - initialize.d/domain-networking
+    tags:
+    - startup
+    - config
+    - hidden
+  ansys-fluent-v170:
+    manifest:
+    - configure.d/install.sh
+    - resources/Ansys Fluent v170.desktop
+    - resources/fluent_launch.sh
+    - resources/modulefile
+    tags:
+    - software
+  appliance-domain-setup:
+    manifest:
+    - start.d/appliance-domain-setup
+    tags:
+    - config
+    - hidden
+  clusterflow:
+    manifest:
+    - initialize.d/install-configure-hook
+    - resources/install-clusterflow
+    tags:
+    - startup
+  configure-beegfs:
+    manifest:
+    - configure.d/configure-beegfs
+    - member-join.d/configure-beegfs
+    tags:
+    - software
+  configure-discrete-volumes:
+    manifest:
+    - initialize.d/configure-volumes
+    tags:
+    - startup
+    - config
+    - hidden
+  configure-docker:
+    manifest:
+    - configure.d/configure-docker
+    - start.d/start-docker
+    tags:
+    - software
+  configure-ephemeral-disks:
+    manifest:
+    - configure.d/configure-ephemeral-disks
+    tags:
+    - config
+  configure-users:
+    manifest:
+    - configure.d/configure-users
+    - configure.d/grouplist.cfg
+    - configure.d/userlist.cfg
+    tags:
+    - config
+  controller-setup:
+    manifest:
+    - configure.d/controller-setup
+    - member-join.d/handle-appliance
+    - member-leave.d/handle-appliance
+    tags:
+    - config
+    - hidden
+  directory-setup:
+    manifest:
+    - configure.d/directory-setup
+    tags:
+    - config
+    - hidden
+  disable-hyperthreading:
+    manifest:
+    - configure.d/disable-hyperthreading
+    tags:
+    - config
+  domain-networking:
+    manifest:
+    - initialize.d/domain-networking
+    tags:
+    - startup
+    - config
+    - hidden
+  ellexusmistral:
+    manifest:
+    - configure.d/extract.sh
+    - resources/modulefile
+    tags:
+    - software
+  enginframe-2015.1:
+    manifest:
+    - configure.d/install-enginframe
+    - resources/alces-flight-www/etc/server-https.d/enginframe.conf
+    - resources/alces-flight-www/resource/enginframe/config.yml
+    - resources/alces-flight-www/resource/enginframe/htdocs/img/resource.png
+    - resources/efinstall.config
+    - start.d/start-enginframe
+    tags:
+    - software
+  enginframe-2017.0:
+    manifest:
+    - configure.d/install-enginframe
+    - resources/alces-flight-www/etc/server-https.d/enginframe.conf
+    - resources/alces-flight-www/resource/enginframe/config.yml
+    - resources/alces-flight-www/resource/enginframe/htdocs/img/resource.png
+    - resources/efinstall.config
+    - start.d/start-enginframe
+    tags:
+    - software
+  gatk:
+    manifest:
+    - configure.d/install.sh
+    - resources/modulefile
+    tags:
+    - software
+  gatk-queue:
+    manifest:
+    - configure.d/install.sh
+    - resources/modulefile
+    tags:
+    - software
+  gridscheduler:
+    manifest:
+    - initialize.d/enable-gridscheduler
+    tags:
+    - startup
+    - software
+  intel-parallel-studio-xe:
+    manifest:
+    - configure.d/run-installer.sh
+    - resources/modulefile
+    tags:
+    - software
+  launch-compat:
+    manifest:
+    - configure.d/account-bucket-setup
+    tags:
+    - config
+    - hidden
+  launch-compat-apps:
+    manifest:
+    - initialize.d/rewrite-customizer-bucket-for-apps
+    tags:
+    - config
+    - hidden
+    - startup
+  matlab:
+    manifest:
+    - configure.d/run-installer.sh
+    - resources/modulefile
+    tags:
+    - software
+  monitor-setup:
+    manifest:
+    - configure.d/monitor-setup
+    tags:
+    - config
+    - hidden
+  openlava:
+    manifest:
+    - initialize.d/enable-openlava
+    tags:
+    - startup
+    - software
+  password-auth:
+    manifest:
+    - configure.d/enable-password-auth
+    tags:
+    - config
+    - hidden
+  pbspro:
+    manifest:
+    - initialize.d/enable-pbspro
+    tags:
+    - startup
+    - software
+  pgi:
+    manifest:
+    - configure.d/run-installer.sh
+    tags:
+    - software
+  prime-depots:
+    manifest:
+    - start.d/download-and-install
+    tags:
+    - config
+    - hidden
+  set-admin-password:
+    manifest:
+    - configure.d/set-admin-password
+    tags:
+    - config
+    - hidden
+  site-depots:
+    manifest:
+    - initialize.d/install-site-depots
+    - initialize.d/share/site-depots/configure
+    tags:
+    - startup
+    - config
+  slurm:
+    manifest:
+    - initialize.d/enable-slurm
+    tags:
+    - startup
+    - software
+  starccm+:
+    manifest:
+    - configure.d/run-installer.sh
+    - resources/modulefile
+    tags:
+    - software
+  start-session:
+    manifest:
+    - start.d/start-session
+    tags:
+    - config
+    - hidden
+  test:
+    manifest:
+    - configure.d/test
+    - fail.d/test
+    - initialize.d/test
+    - member-join.d/test
+    - member-leave.d/test
+    - node-started.d/test
+    - start.d/test
+    tags:
+    - startup
+    - hidden
+  torque:
+    manifest:
+    - initialize.d/enable-torque
+    tags:
+    - startup
+    - software

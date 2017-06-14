@@ -50,8 +50,9 @@ elif [ "$1" == "--legacy" ]; then
 else
     if [ "$branch" == "master" ]; then
         assert_unchanged
+        tag_prefix="$1"
         # we always tag master when pushed
-        tag=$prefix.$(date +%Y%m%d%H%M%S)
+        tag=$tag_prefix.$(date +%Y%m%d%H%M%S)
         git tag $tag && git push origin master && git push --tags
         if [ $? -gt 0 ]; then
             exit 1
@@ -61,7 +62,7 @@ else
     prefix_name="($1)"
 fi
 
-regions="eu-west-1 eu-west-2 eu-central-1 ap-northeast-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2 ca-central-1"
+regions="${REGIONS:-eu-west-1 eu-west-2 eu-central-1 ap-northeast-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2 ca-central-1}"
 
 cd $(dirname "$0")
 for r in $regions; do

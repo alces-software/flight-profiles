@@ -1,1 +1,1 @@
-initialize.d/disable-hyperthreading
+configure.d/disable-hyperthreading

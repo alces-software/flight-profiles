@@ -1,0 +1,4 @@
+configure.d/install.sh
+resources/Ansys Fluent v170.desktop
+resources/fluent_launch.sh
+resources/modulefile

@@ -1,6 +1,5 @@
-#!/bin/bash
 #==============================================================================
-# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
 #
 # This file/package is part of Alces Clusterware.
 #
@@ -37,13 +36,19 @@ setup() {
 }
 
 main() {
-    local hook_dir
-    # Create a custom handler that fires after cluster-gridware has been initialized
-    hook_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    cp -R "${hook_dir}"/share/site-depots "${cw_ROOT}"/etc/handlers/site-depots
-    chmod 0755 "${cw_ROOT}"/etc/handlers/site-depots/configure
+    local role
+    role="$2"
+    if [ "$role" == "master" ]; then
+        echo "Starting EnginFrame service..."
+        if distro_start_service enginframe; then
+            echo "EnginFrame service started successfully."
+        else
+            echo "WARNING: EnginFrame service failed to start."
+        fi
+    fi
 }
 
 setup
+require distro
 
 main "$@"

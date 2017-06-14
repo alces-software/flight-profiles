@@ -36,14 +36,8 @@ setup() {
     kernel_load
 }
 
-main() {
-    local hook_dir
-    # Create a custom handler that fires after cluster-gridware has been initialized
-    hook_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    cp -R "${hook_dir}"/share/site-depots "${cw_ROOT}"/etc/handlers/site-depots
-    chmod 0755 "${cw_ROOT}"/etc/handlers/site-depots/configure
-}
-
 setup
 
-main "$@"
+_ALCES="${cw_ROOT}"/bin/alces
+
+${_ALCES} configure hyperthreading disable

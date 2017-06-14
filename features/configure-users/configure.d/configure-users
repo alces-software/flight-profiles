@@ -1,0 +1,187 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+# Date: 04/04/17
+# Desc: Adds the users in userlist.cfg and groups in grouplist.cfg
+#
+# Preconditions:
+#   The list files must be stored in client s3-clusterware-bucket
+#     -> <s3-clusterware-bucket>/configure-add-users/userlist.cfg
+#     -> <s3-clusterware-bucket>/configure-add-users/grouplist.cfg
+#   Format for users:  username UID, primary_GID [, secondary_GID ...]
+#   Format for groups: groupname, GID
+#   Secondary groups must be included in grouplist.cfg
+#
+# NOTE:
+#   The primary group will be made automatically if not included
+#   Blank and lines starting with '#' in the list files are ignored
+#==============================================================================
+# Sets credentials for connecting to S3
+_set_s3_configuration() {
+  files_load_config cluster-customizer
+  _S3CFG="$(mktemp /tmp/cluster-customizer.s3cfg.XXXXXXXX)"
+  cat <<EOF > "${_S3CFG}"
+[default]
+access_key = "${cw_CLUSTER_CUSTOMIZER_access_key_id}"
+secret_key = "${cw_CLUSTER_CUSTOMIZER_secret_access_key}"
+security_token = ""
+use_https = True
+check_ssl_certificate = True
+EOF
+}
+
+
+# Pulls the user and groups list from client's S3 bucket
+_retrieve_list_files() {
+  _USER_FILE="$(mktemp /tmp/cluster-customizer.user-list.XXXXXXXX)"
+  _GROUP_FILE="$(mktemp /tmp/cluster-customizer.group-list.XXXXXXXX)"
+  if [ -n "${cw_CLUSTER_CUSTOMIZER_bucket}" ]; then
+    _pull_files "${cw_CLUSTER_CUSTOMIZER_bucket}"
+  elif network_is_ec2; then
+    _pull_files "s3://alces-flight-$(network_ec2_hashed_account)"
+  else
+    echo "FATAL: Clusterware s3 bucket has not been set" >&2
+    _EXIT_CODE=1
+    _exit
+  fi
+}
+
+_pull_files() {
+  local bucket out
+  bucket=$1
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/userlist.cfg $_USER_FILE 2>&1 >/dev/null)
+  if [[ "$?" -ne 0 ]]; then
+    echo "FATAL: Could not locate user list: $out" >&2
+    _EXIT_CODE=2
+    _exit
+  fi
+  out=$(${cw_ROOT}/opt/s3cmd/s3cmd "-c ${_S3CFG}" --force get $bucket/configure-users/grouplist.cfg $_GROUP_FILE 2>&1 >/dev/null)
+  if [[ "$?" -ne 0 ]]; then
+    echo "FATAL: Could not locate group list: $out" >&2
+    _EXIT_CODE=2
+    _exit
+  fi
+}
+
+# Reads the groups from the list
+_add_groups_from_list() {
+  local delim regex line
+  delim="\s*,\s*"
+  while read -r line || [[ -n "$line" ]]; do
+    #Validates input
+    regex="^[a-z][-a-z0-9]*$delim[0-9]+$"
+    if [[ "$line" =~ $regex ]]; then
+      _add_group $(echo $line | sed "s/$delim/ /g")
+    elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
+      echo "ERROR: Unrecognised group format: $line" 1>&2
+      _EXIT_CODE=3
+    fi
+  done < $_GROUP_FILE
+}
+
+# Reads the users from the list
+_add_users_from_list() {
+  local delim regex line
+  delim="\s*,\s*"
+  while read -r line || [[ -n "$line" ]]; do
+    # Validates input
+    regex="^[a-z][-a-z0-9]*($delim[0-9]+)+$"
+    if [[ "$line" =~ $regex ]]; then
+      _add_user $(echo $line | sed "s/$delim/ /g")
+    elif [[ "$line" ]] && ! [[ "$line" =~ ^# ]]; then
+      echo "ERROR: Unrecognised user format: $line" 1>&2
+      _EXIT_CODE=4
+    fi
+  done < $_USER_FILE
+}
+
+# Adds group ($1 groupname, $2 gid)
+_add_group() {
+  local groupname gid out
+  groupname=$1
+  gid=$2
+
+  out=$(groupadd -g $gid $groupname 2>&1)
+  if [[ "$?" -ne 0 ]]; then
+    echo "ERROR: Could not add group $groupname, $out" >&2
+    _EXIT_CODE=5
+  fi
+}
+
+# Adds user ($1 username, $2 uid, $3 gid, $4+ secondary gids)
+_add_user() {
+  local username uid gid out
+  username=$1
+  uid=$2
+  gid=$3
+  shift 3
+
+  # Sets gid to be uid if not included
+  if [[ -z "$gid" ]]; then
+    gid=$uid
+  fi
+
+  # Adds the user (and creates primary group if it doesn't exists)
+  getent group $gid >/dev/null || _add_group $username $gid
+  out=$(useradd -u $uid -g $gid $username 2>&1)
+  if [[ "$?" -ne 0 ]]; then
+    echo "ERROR: Could not add user $username, $out" >&2
+    _EXIT_CODE=6
+  fi
+
+  # Adds user to additional groups
+  for gid in $@; do
+    out=$(usermod -aG $gid $username 2>&1)
+    if [[ "$?" -ne 0 ]]; then
+      echo "ERROR: Could not add $username (user) to $gid (group), $out" >&2
+      _EXIT_CODE=7
+    fi
+  done
+}
+
+# Teardown and exit
+_exit() {
+  if [[ "$_EXIT_CODE" -eq "0" ]]; then
+    rm -f "$_S3CFG"
+    rm -f "$_USER_FILE"
+    rm -f "$_GROUP_FILE"
+  else
+    echo "S3 config file is: $_S3CFG" >&2
+    echo "User file is: $_USER_FILE" >&2
+    echo "Group file is: $_GROUP_FILE" >&2
+  fi
+  exit $_EXIT_CODE
+}
+
+# Main running code
+main() {
+  _EXIT_CODE=0
+  _set_s3_configuration
+  _retrieve_list_files
+  _add_groups_from_list
+  _add_users_from_list
+  _exit
+}
+
+require files
+require network
+main
