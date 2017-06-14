@@ -64,6 +64,11 @@ profiles:
     - configure.d/configure-ephemeral-disks
     tags:
     - config
+  configure-singularity:
+    manifest:
+    - configure.d/configure-singularity
+    tags:
+    - software
   configure-users:
     manifest:
     - configure.d/configure-users
