@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# Copyright (C) 2016 Stephen F. Norledge and Alces Software Ltd.
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
 #
 # This file/package is part of Alces Clusterware.
 #
@@ -37,13 +37,15 @@ setup() {
 }
 
 main() {
-    local hook_dir
     # Create a custom handler that fires after cluster-gridware has been initialized
-    hook_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    cp -R "${hook_dir}"/share/site-depots "${cw_ROOT}"/etc/handlers/site-depots
-    chmod 0755 "${cw_ROOT}"/etc/handlers/site-depots/configure
+    mkdir -p "${cw_ROOT}"/etc/handlers/zz-clusterflow
+    cp -R "${_RESOURCES_DIR}"/install-clusterflow "${cw_ROOT}"/etc/handlers/zz-clusterflow/configure
+    chmod 0755 "${cw_ROOT}"/etc/handlers/zz-clusterflow/configure
 }
 
 setup
+require handler
+
+_RESOURCES_DIR="$(handler_dir)/../resources"
 
 main "$@"

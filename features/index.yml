@@ -21,6 +21,12 @@ profiles:
     tags:
     - config
     - hidden
+  clusterflow:
+    manifest:
+    - initialize.d/install-configure-hook
+    - resources/install-clusterflow
+    tags:
+    - startup
   configure-beegfs:
     manifest:
     - configure.d/configure-beegfs

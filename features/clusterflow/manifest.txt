@@ -1,0 +1,2 @@
+initialize.d/install-configure-hook
+resources/install-clusterflow
