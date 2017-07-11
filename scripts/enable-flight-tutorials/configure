@@ -41,6 +41,26 @@ enable_flight_tutorials() {
     "${cw_ROOT}"/bin/alces service enable alces-flight-tutorials
 }
 
+create_metadata_file() {
+    cat <<EOF > "${cw_ROOT}"/etc/meta.d/flight-tutorials.rc
+: '
+: SYNOPSIS: Flight Tutorials access details
+: HELP: Display information about the Flight Tutorials service configuration for this cluster.
+: '
+################################################################################
+##
+## Alces Clusterware - Metadata file
+## Copyright (c) 2016 Alces Software Ltd
+##
+################################################################################
+EOF
+    # XXX We should check that HTTPS access is enabled.  We don't run the
+    # tutorials over HTTP, so if it isn't enabled we should bail here and
+    # above too.
+    echo "cw_META_flight_tutorials_https_desc=\"HTTPS access point\"" >> "${cw_ROOT}"/etc/meta.d/flight-tutorials.rc
+    echo "cw_META_flight_tutorials_https=\"$(tutorials_url)\"" >> "${cw_ROOT}"/etc/meta.d/flight-tutorials.rc
+}
+
 add_signal_data() {
     # Add tutorial access URL to signal.rc
     signal_data="Flight Tutorials URL=$(tutorials_url)"
@@ -64,6 +84,7 @@ tutorials_url() {
 main() {
     enable_flight_tutorials
     add_signal_data
+    create_metadata_file
 }
 
 setup
