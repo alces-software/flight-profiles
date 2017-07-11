@@ -78,7 +78,13 @@ tutorials_url() {
     host="${cw_ACCESS_fqdn:-$(network_get_public_hostname)}"
     # XXX Obtain https_port correctly. Don't rely on the default 443, to be correct.
     https_port=""
-    echo "https://${host}${https_port}/tutorials"
+    tutorial_name_param="${cw_FLIGHT_TUTORIAL_name:-default}"
+    if [ "${tutorial_name_param}" != "default" ] ; then
+        tutorial_name_param="?tutorials=${tutorial_name_param}"
+    else
+        tutorial_name_param=""
+    fi
+    echo "https://${host}${https_port}/tutorials${tutorial_name_param}"
 }
 
 main() {
