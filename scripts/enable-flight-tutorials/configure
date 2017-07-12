@@ -100,6 +100,9 @@ tutorials_url() {
 }
 
 main() {
+    # XXX Will the script be ran on all nodes or just the master node?
+    # XXX Should we check that the node is the master node?  I think that we
+    # only want to do any of this on the master node.
     enable_flight_tutorials
     add_signal_data
     create_metadata_file
