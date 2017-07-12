@@ -1,2 +1,2 @@
-startup
+config
 hidden
