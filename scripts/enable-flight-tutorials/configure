@@ -75,16 +75,20 @@ RUBY
 }
 
 tutorials_url() {
+    files_load_config --optional access
+    files_load_config --optional alces-flight-tutorials
+
     host="${cw_ACCESS_fqdn:-$(network_get_public_hostname)}"
     # XXX Obtain https_port correctly. Don't rely on the default 443, to be correct.
     https_port=""
-    tutorial_name_param="${cw_FLIGHT_TUTORIAL_name:-default}"
-    if [ "${tutorial_name_param}" != "default" ] ; then
-        tutorial_name_param="?tutorials=${tutorial_name_param}"
+    tutorials_path="${cw_ALCES_FLIGHT_TUTORIALS_path:-tutorials}"
+    tutorials_param="${cw_ALCES_FLIGHT_TUTORIALS_tutorial:-default}"
+    if [ "${tutorials_param}" != "default" ] ; then
+        tutorials_param="?tutorials=${tutorials_param}"
     else
-        tutorial_name_param=""
+        tutorials_param=""
     fi
-    echo "https://${host}${https_port}/tutorials${tutorial_name_param}"
+    echo "https://${host}${https_port}/tutorials${tutorials_param}"
 }
 
 main() {
@@ -97,6 +101,5 @@ setup
 require files
 require network
 require ruby
-files_load_config --optional access
 
 main "$@"
