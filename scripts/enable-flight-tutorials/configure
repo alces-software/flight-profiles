@@ -75,12 +75,19 @@ RUBY
 }
 
 tutorials_url() {
+    local host https_port tutorials_path tutorials_param
+
     files_load_config --optional access
     files_load_config --optional alces-flight-tutorials
+    files_load_config --optional alces-flight-www
 
     host="${cw_ACCESS_fqdn:-$(network_get_public_hostname)}"
-    # XXX Obtain https_port correctly. Don't rely on the default 443, to be correct.
-    https_port=""
+    https_port="${cw_ALCES_FLIGHT_WWW_https_port:-443}"
+    if [ "$https_port" != "443" ]; then
+        https_port=":${https_port}"
+    else
+        https_port=""
+    fi
     tutorials_path="${cw_ALCES_FLIGHT_TUTORIALS_path:-tutorials}"
     tutorials_param="${cw_ALCES_FLIGHT_TUTORIALS_tutorial:-default}"
     if [ "${tutorials_param}" != "default" ] ; then
@@ -88,6 +95,7 @@ tutorials_url() {
     else
         tutorials_param=""
     fi
+
     echo "https://${host}${https_port}/tutorials${tutorials_param}"
 }
 
