@@ -1,0 +1,83 @@
+#%Module1.0#####################################################################
+##
+## Alces HPC Software Stack - Compiler module file
+## Copyright (c) 2016 Alces Software Ltd
+##
+## path: apps/ansys-fluent/v181
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+        source $::env(MODULES_ALCES_TCL)
+    } else {
+        # compatibility mode for module use without availability of Alces tools
+        proc ::process {body} { eval $body }
+        proc ::depend {module {version ""} {_ ""}} {
+            set req [regsub {\-} $module {/}]/$version
+            if { [catch { prereq $req }] } {
+                puts stderr "Could not satisfy prereq: $req"
+                break
+            }
+        }
+        proc ::alces {_ module} { return $module }
+        proc ::search {_ _ _} { }
+    }
+}
+
+proc ModulesHelp { } {
+    puts stderr "
+               ============ellexusmistral============
+                        Ellexus Mistral v2.9.4
+               ======================================
+
+This module sets up your environment for the use of the
+'Ansys Fluent' application. This module sets up version 'v181'
+of the service in conjunction with the 'Ansys Fluent' feature
+profile available through Alces Clusterware.
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+http://www.ansys.com/Products/Fluids/ANSYS-Fluent
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show apps/ansys-fluent/v181
+
+"
+}
+
+set     app     ansys-fluent
+set     version v181
+set     appcaps ANSYSFLUENT
+set     appdir  /opt/apps/ansys/fluent/v181
+
+module-whatis   "
+
+            Title: ansys-fluent
+          Summary: ANSYS Fluent contains the broad physical modeling capabilities needed to model flow, turbulence, heat transfer, and reactions for industrial applications 
+            Group: Alces/Apps
+              URL: http://www.ansys.com/Products/Fluids/ANSYS-Fluent
+
+             Name: ansys-fluent
+          Version: v181
+           Module: [alces pretty apps/ansys-fluent/v181]
+      Module path: /opt/apps/etc/modules/apps/ansys-fluent/v181
+     Package path: /opt/apps/ansys-fluent/v181
+
+For further information, execute:
+
+\tmodule help apps/ansys-fluent/v181
+"
+
+prepend-path PATH ${appdir}/v181/fluent/bin
+prepend-path LD_LIBRARY_PATH ${appdir}/v181/fluent/lib3.0/lnamd64/
+setenv ${appcaps} ${appdir}
+setenv ${appcaps}DIR ${appdir}
+setenv ${appcaps}LICENSE ${appdir}/license
+setenv ANSYSLMD_LICENSE_FILE 1055@login1
