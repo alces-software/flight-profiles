@@ -146,8 +146,8 @@ _install_shortcut() {
 	install -D -m 0755 "${_RESOURCES_DIR}/fluent_launch.sh" ${_INSTALLDIR}/fluent_launch.sh
 	_ADMIN_USER=`id -un 1000`
 	mkdir -p /home/${_ADMIN_USER}/Desktop
-        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/home/${_ADMIN_USER}/Desktop/Ansys Fluent v170.desktop"
-        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v170.desktop" "/root/Desktop/Ansys Fluent v170.desktop"
+        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v181.desktop" "/home/${_ADMIN_USER}/Desktop/Ansys Fluent v181.desktop"
+        install -D -m 0755 "${_RESOURCES_DIR}/Ansys Fluent v181.desktop" "/root/Desktop/Ansys Fluent v181.desktop"
 }
 
 _install_app() {
@@ -210,12 +210,12 @@ _VENDOR=Ansys
 _APP_NAME=Fluent
 _VENDOR_EMAIL=info@ansys.com
 _APP=ansys-fluent
-_APP_VER=v170
-_PACKAGE=FLUIDS_170_LINX64.tar
+_APP_VER=v181
+_PACKAGE=FLUIDS_181_LINX64.tar
 _LICENSE=fluent-license.lic
 _WORKDIR=/tmp
 _LOGDIR=/var/log/clusterware/customizer/feature-${_APP}/${_APP_VER}
-_INSTALLDIR=/opt/apps/ansys/fluent/v170
+_INSTALLDIR=/opt/apps/ansys/fluent/v181
 _APP_MODULE_PATH=/opt/apps/
 _RESOURCES_DIR="$(handler_dir)/../resources"
 

@@ -3,7 +3,7 @@
 ## Alces HPC Software Stack - Compiler module file
 ## Copyright (c) 2016 Alces Software Ltd
 ##
-## path: apps/ansys-fluent/v170
+## path: apps/ansys-fluent/v181
 ################################################################################
 if { [info exists ::env(ALCES_TRACE)] } {
     puts stderr " -> $::ModulesCurrentModulefile"
@@ -34,7 +34,7 @@ proc ModulesHelp { } {
                ======================================
 
 This module sets up your environment for the use of the
-'Ansys Fluent' application. This module sets up version 'v170'
+'Ansys Fluent' application. This module sets up version 'v181'
 of the service in conjunction with the 'Ansys Fluent' feature
 profile available through Alces Clusterware.
 
@@ -47,15 +47,15 @@ http://www.ansys.com/Products/Fluids/ANSYS-Fluent
 For further details regarding this module, including the environment
 modifications it will apply, execute:
 
-\tmodule show apps/ansys-fluent/v170
+\tmodule show apps/ansys-fluent/v181
 
 "
 }
 
 set     app     ansys-fluent
-set     version v170
+set     version v181
 set     appcaps ANSYSFLUENT
-set     appdir  /opt/apps/ansys/fluent/v170
+set     appdir  /opt/apps/ansys/fluent/v181
 
 module-whatis   "
 
@@ -65,18 +65,18 @@ module-whatis   "
               URL: http://www.ansys.com/Products/Fluids/ANSYS-Fluent
 
              Name: ansys-fluent
-          Version: v170
-           Module: [alces pretty apps/ansys-fluent/v170]
-      Module path: /opt/apps/etc/modules/apps/ansys-fluent/v170
-     Package path: /opt/apps/ansys-fluent/v170
+          Version: v181
+           Module: [alces pretty apps/ansys-fluent/v181]
+      Module path: /opt/apps/etc/modules/apps/ansys-fluent/v181
+     Package path: /opt/apps/ansys-fluent/v181
 
 For further information, execute:
 
-\tmodule help apps/ansys-fluent/v170
+\tmodule help apps/ansys-fluent/v181
 "
 
-prepend-path PATH ${appdir}/v170/fluent/bin
-prepend-path LD_LIBRARY_PATH ${appdir}/v170/fluent/lib3.0/lnamd64/
+prepend-path PATH ${appdir}/v181/fluent/bin
+prepend-path LD_LIBRARY_PATH ${appdir}/v181/fluent/lib3.0/lnamd64/
 setenv ${appcaps} ${appdir}
 setenv ${appcaps}DIR ${appdir}
 setenv ${appcaps}LICENSE ${appdir}/license
