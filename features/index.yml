@@ -255,3 +255,10 @@ profiles:
     tags:
     - startup
     - software
+  zero-node-autoscaling:
+    manifest:
+    - configure.d/add-groups
+    - configure.d/apply-patches
+    - resources/autoscaling-handler.patch
+    tags:
+    - config
