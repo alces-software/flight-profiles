@@ -1,0 +1,164 @@
+#%Module1.0#####################################################################
+##
+## Alces Clusterware - Application module file
+## Copyright (c) 2008-2015 Alces Software Ltd
+##
+## path: apps/freesurfer/6.0.0
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+	source $::env(MODULES_ALCES_TCL)
+    } else {
+	# compatibility mode for module use without availability of Alces tools
+	proc ::process {body} { eval $body }
+	proc ::depend {module {version ""} {_ ""}} {
+	    set req [regsub {\-} $module {/}]/$version
+	    if { [catch { prereq $req }] } {
+		puts stderr "Could not satisfy prereq: $req"
+		break
+	    }
+	}
+	proc ::alces {_ module} { return $module }
+	proc ::search {_ _ _} { }
+        proc ::assert_packages { } { }
+    }
+}
+
+proc ModulesHelp { } {
+    global app
+    global appdir
+    global appcaps
+    global version
+    puts stderr "
+                    ======== FreeSurfer ========
+     An open source software suite for processing and analyzing
+                      (human) brain MRI images
+                     ===========================
+
+This module sets up your environment for the use of the 'freesurfer'
+application. This module sets up version '6.0.0' of the
+application.
+
+
+>> SYNOPSIS <<
+
+FreeSurfer is a set of tools for analysis and visualization of
+structural and functional brain imaging data. FreeSurfer contains a
+fully automatic structural imaging stream for processing cross
+sectional and longitudinal data.
+
+FreeSurfer provides many anatomical analysis tools, including:
+representation of the cortical surface between white and gray
+matter, representation of the pial surface, segmentation of white
+matter from the rest of the brain, skull stripping, B1 bias field
+correction, nonlinear registration of the cortical surface of an
+individual with a stereotaxic atlas, labeling of regions of the
+cortical surface, statistical analysis of group morphometry
+differences, and labeling of subcortical brain structures and much
+more.
+
+
+>> LICENSING <<
+
+This package is made available subject to the following license(s):
+
+\tNONFREE; registration required, see http://surfer.nmr.mgh.harvard.edu/fswiki/Registration
+
+Please refer to the website for further details regarding licensing.
+
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+\thttp://surfer.nmr.mgh.harvard.edu/
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show apps/freesurfer/6.0.0/bin
+
+
+>> GET STARTED <<
+
+Please refer to the website for further details on usage of this
+package.
+"
+}
+
+set     app      freesurfer
+set     version  6.0.0
+set     appcaps  FREESURFER
+set     appdir   /opt/apps/freesurfer/6.0.0
+
+if { [ namespace exists alces ] } { set dependencies "" } { set dependencies "" }
+module-whatis   "
+
+            Title: FreeSurfer
+          Summary: An open source software suite for processing and analyzing (human) brain MRI images
+          License: NONFREE; registration required, see http://surfer.nmr.mgh.harvard.edu/fswiki/Registration
+            Group: Medicine
+              URL: http://surfer.nmr.mgh.harvard.edu/
+
+             Name: freesurfer
+          Version: 6.0.0
+           Module: [alces pretty apps/freesurfer/6.0.0]
+      Module path: /opt/apps/etc/modules/apps/freesurfer/6.0.0
+     Package path: /opt/apps/freesurfer/6.0.0
+
+       Repository: git+https://github.com/alces-software/packager-base.git@26ab704
+          Package: ext/freesurfer/@448deb5e
+      Last update: 2014-01-08
+
+          Builder: alces@login1.cluster.prv.alces.network (Alces Administrator)
+       Build date: 2017-08-30T10:00:50
+ Build parameters: license=/home/alces/license.txt tarball=ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+         Compiler: N/A
+$dependencies
+
+For further information, execute:
+
+	module help apps/freesurfer/6.0.0
+"
+
+assert_packages
+
+process {
+
+conflict apps/freesurfer
+}
+
+set mnidir ${appdir}/mni
+
+setenv FREESURFER_HOME ${appdir}
+
+setenv ${appcaps}DIR ${appdir}
+setenv ${appcaps}BIN ${appdir}/bin
+setenv ${appcaps}DOC ${appdir}/docs
+
+setenv FIX_VERTEX_AREA ""
+setenv FMRI_ANALYSIS_DIR ${appdir}/fsfast
+setenv FSFAST_HOME ${appdir}/fsfast
+setenv FSF_OUTPUT_FORMAT nii.gz
+setenv FS_OVERRIDE 0
+setenv FUNCTIONALS_DIR ${appdir}/sessions
+setenv LOCAL_DIR ${appdir}/local
+
+setenv MINC_BIN_DIR ${mnidir}/bin
+setenv MINC_LIB_DIR ${mnidir}/lib
+setenv MNI_DATAPATH ${mnidir}/data
+setenv MNI_DIR ${mnidir}
+setenv MNI_PERL5LIB ${mnidir}/lib/perl5/5.8.5
+
+setenv OS Linux
+setenv SUBJECTS_DIR ${appdir}/subjects
+
+prepend-path PERL5LIB ${mnidir}/lib/perl5/5.8.5
+prepend-path PATH ${mnidir}/bin
+prepend-path PATH ${appdir}/tktools
+prepend-path PATH ${appdir}/fsfast/bin
+prepend-path PATH ${appdir}/bin

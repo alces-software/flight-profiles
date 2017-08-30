@@ -1,0 +1,135 @@
+#%Module1.0#####################################################################
+##
+## Alces Clusterware - Application module file
+## Copyright (c) 2008-2015 Alces Software Ltd
+##
+## path: apps/fsl/5.0.10
+################################################################################
+if { [info exists ::env(ALCES_TRACE)] } {
+    puts stderr " -> $::ModulesCurrentModulefile"
+}
+
+if { [namespace exists alces] == 0 } {
+    if { [info exists ::env(MODULES_ALCES_TCL)] } {
+	source $::env(MODULES_ALCES_TCL)
+    } else {
+	# compatibility mode for module use without availability of Alces tools
+	proc ::process {body} { eval $body }
+	proc ::depend {module {version ""} {_ ""}} {
+	    set req [regsub {\-} $module {/}]/$version
+	    if { [catch { prereq $req }] } {
+		puts stderr "Could not satisfy prereq: $req"
+		break
+	    }
+	}
+	proc ::alces {_ module} { return $module }
+	proc ::search {_ _ _} { }
+        proc ::assert_packages { } { }
+    }
+}
+
+proc ModulesHelp { } {
+    global app
+    global appdir
+    global appcaps
+    global version
+    puts stderr "
+                    ======== FreeSurfer ========
+    A comprehensive library of analysis tools for FMRI, MRI and
+                       DTI brain imaging data
+                     ===========================
+
+This module sets up your environment for the use of the 'fsl'
+application. This module sets up version '5.0.10' of the
+application.
+
+
+>> SYNOPSIS <<
+
+FSL is a comprehensive library of analysis tools for FMRI, MRI and
+DTI brain imaging data. It runs on Apple and PCs (both Linux, and
+Windows via a Virtual Machine), and is very easy to install. Most of
+the tools can be run both from the command line and as GUIs
+("point-and-click" graphical user interfaces).
+
+
+>> LICENSING <<
+
+This package is made available subject to the following license(s):
+
+\tNONFREE; registration required, see http://fsl.fmrib.ox.ac.uk/fsldownloads/
+
+Please refer to the website for further details regarding licensing.
+
+
+>> FURTHER INFORMATION <<
+
+More information about this software can be found at the website:
+
+\thttp://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL
+
+For further details regarding this module, including the environment
+modifications it will apply, execute:
+
+\tmodule show apps/fsl/5.0.10
+
+
+>> GET STARTED <<
+
+Please refer to the website for further details on usage of this
+package.
+"
+}
+
+set     app      fsl
+set     version  5.0.10
+set     appcaps  FSL
+set     appdir   /opt/apps/fsl/5.0.10
+
+if { [ namespace exists alces ] } { set dependencies "" } { set dependencies "" }
+module-whatis   "
+
+            Title: FreeSurfer
+          Summary: A comprehensive library of analysis tools for FMRI, MRI and DTI brain imaging data
+          License: NONFREE; registration required, see http://fsl.fmrib.ox.ac.uk/fsldownloads/
+            Group: Medicine
+              URL: http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FSL
+
+             Name: fsl
+          Version: 5.0.10
+           Module: [alces pretty apps/fsl/5.0.10]
+      Module path: /opt/apps/etc/modules/apps/fsl/5.0.10
+     Package path: /opt/apps/fsl/5.0.10
+
+       Repository: file:/opt/gridware/etc/repos/local
+          Package: ext/fsl/@720484e7
+      Last update: 2014-01-09
+
+          Builder: alces@login1.cluster.prv.alces.network (Alces Administrator)
+       Build date: 2017-08-30T11:15:56
+         Compiler: N/A
+$dependencies
+
+For further information, execute:
+
+	module help apps/fsl/5.0.10
+"
+
+assert_packages
+
+process {
+
+conflict apps/fsl
+}
+
+setenv ${appcaps}DIR ${appdir}
+setenv ${appcaps}BIN ${appdir}/bin
+
+# Based on defaults in etc/fslconf/fsl.sh
+setenv FSLOUTPUTTYPE NIFTI_GZ
+setenv FSLMULTIFILEQUIT TRUE
+setenv FSLGECUDAQ cuda.q
+setenv FSLTCLSH ${appdir}/bin/fsltclsh
+setenv FSLWISH ${appdir}/bin/fslwish
+
+prepend-path PATH ${appdir}/bin
