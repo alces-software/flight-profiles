@@ -118,6 +118,18 @@ profiles:
     - start.d/start-enginframe
     tags:
     - software
+  freesurfer-6.0.0:
+    manifest:
+    - resources/modulefile
+    - start.d/install.sh
+    tags:
+    - software
+  fsl-5.0.10:
+    manifest:
+    - resources/modulefile
+    - start.d/install.sh
+    tags:
+    - software
   gatk:
     manifest:
     - configure.d/install.sh
