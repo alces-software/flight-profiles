@@ -110,15 +110,15 @@ groups = if File.exist?(group_file)
 else
   {
     'general-pilot' => {cores: 2, ram_mib: 3840 },
-    'general-lowcost' => {cores: 36, ram_mib: 60 * 1024 },
-    'general-lowrisk' => {cores: 36, ram_mib: 60 * 1024 },
+    'general-economy' => {cores: 36, ram_mib: 60 * 1024 },
+    'general-durable' => {cores: 36, ram_mib: 60 * 1024 },
     'gpu-pilot' => {cores: 8, ram_mib: 15 * 1024 },
-    'gpu-lowcost' => {cores: 32, ram_mib: 488 * 1024 },
-    'gpu-lowrisk' => {cores: 32, ram_mib: 488 * 1024 },
-    'highmem-lowcost' => {cores: 32, ram_mib: 244 * 1024 },
-    'highmem-lowrisk' => {cores: 32, ram_mib: 244 * 1024 },
-    'balanced-lowcost' => {cores: 40, ram_mib: 160 * 1024 },
-    'balanced-lowrisk' => {cores: 40, ram_mib: 160 * 1024 },
+    'gpu-economy' => {cores: 32, ram_mib: 488 * 1024 },
+    'gpu-durable' => {cores: 32, ram_mib: 488 * 1024 },
+    'highmem-economy' => {cores: 32, ram_mib: 244 * 1024 },
+    'highmem-durable' => {cores: 32, ram_mib: 244 * 1024 },
+    'balanced-economy' => {cores: 40, ram_mib: 160 * 1024 },
+    'balanced-durable' => {cores: 40, ram_mib: 160 * 1024 },
   }
 end
 m = '${name}'.match(/.*-compute-([^-]*).*/)
