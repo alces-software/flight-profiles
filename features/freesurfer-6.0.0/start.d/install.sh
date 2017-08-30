@@ -107,6 +107,7 @@ _unpack_tarball() {
       --strip-components=1 \
       --directory ${_INSTALLDIR} \
       2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
+  chown -R root:gridware ${_INSTALLDIR}
 }
 
 _install_modulefile() {
@@ -119,7 +120,7 @@ _install_modulefile() {
 }
 
 _install_license() {
-  cp ${_WORKDIR}/${_LICENSE} ${_INSTALLDIR}/${_APP_VER}/.license
+  cp ${_WORKDIR}/${_LICENSE} ${_INSTALLDIR}/.license
 }
 
 _install_app() {
@@ -189,6 +190,7 @@ _LOGDIR=/var/log/clusterware/customizer/feature-${_APP}/${_APP_VER}
 _INSTALLDIR=/opt/apps/freesurfer/6.0.0
 _APP_MODULE_PATH=/opt/apps/
 _RESOURCES_DIR="$(handler_dir)/../resources"
-_DOWNLOAD_URL=ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+#_DOWNLOAD_URL=ftp://surfer.nmr.mgh.harvard.edu/pub/dist/freesurfer/6.0.0/freesurfer-Linux-centos6_x86_64-stable-pub-v6.0.0.tar.gz
+_DOWNLOAD_URL=https://s3-eu-west-1.amazonaws.com/alces-flight/Gridware/freesurfer-6.0.0.tar.gz
 
 main "$@"

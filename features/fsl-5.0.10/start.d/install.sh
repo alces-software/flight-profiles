@@ -99,6 +99,7 @@ _unpack_tarball() {
   tar -xvf ${_WORKDIR}/${_PACKAGE} \
       --directory ${_INSTALLDIR} \
       2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
+  chown -R root:gridware ${_INSTALLDIR}
 }
 
 _install_modulefile() {
