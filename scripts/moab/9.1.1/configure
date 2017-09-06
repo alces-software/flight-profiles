@@ -1,0 +1,202 @@
+#==============================================================================
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+_fetch_app_from_s3() {
+    local bucket s3cfg
+    bucket="$1"
+    s3cfg="$(mktemp /tmp/cluster-customizer.s3cfg.XXXXXXXX)"
+    cat <<EOF > "${s3cfg}"
+[default]
+access_key = "${cw_CLUSTER_CUSTOMIZER_access_key_id}"
+secret_key = "${cw_CLUSTER_CUSTOMIZER_secret_access_key}"
+security_token = ""
+use_https = True
+check_ssl_certificate = True
+EOF
+    ${cw_ROOT}/opt/s3cmd/s3cmd -c ${s3cfg} get ${bucket}/apps/${_APP}/${_PACKAGE} ${_WORKDIR}/${_PACKAGE}
+    ${cw_ROOT}/opt/s3cmd/s3cmd -c ${s3cfg} get ${bucket}/apps/${_APP}/${_LICENSE} ${_WORKDIR}/${_LICENSE}
+    rm -f ${s3cfg}
+}
+
+_install_prereqs() {
+	yum install -y -e0 make libcurl perl-CPAN libxml2-devel gcc 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-prereqs
+}
+
+_show_help() {
+          cat <<EOF
+******************************************************************************
+
+  Please download the ${_APP_NAME} installation file(s) from the
+  download link provided by ${_VENDOR}.
+
+  If you do not have a download link, please contact ${_VENDOR} support at
+  ${_VENDOR_EMAIL}.
+
+  Copy the installation archive and license file to ${_WORKDIR} on
+  this machine:
+
+    ${_WORKDIR}/${_PACKAGE}
+    ${_WORKDIR}/${_LICENSE}
+
+  For repeatable installation, upload to your Alces Flight S3
+  customization bucket:
+
+    ${bucket}/apps/${_APP}/${_PACKAGE}
+    ${bucket}/apps/${_APP}/${_LICENSE}
+
+  Once you have placed the files in one of these locations, run the
+  following command:
+
+    alces customize trigger configure feature-${_APP}
+
+  Installation will then continue.
+
+******************************************************************************
+EOF
+}
+
+_show_completed_message() {
+    files_load_config --optional access
+    cat <<EOF
+Adaptive Computing Moab Workload Manager installation completed.
+
+EOF
+}
+
+_setup_logdir() {
+        mkdir -p ${_LOGDIR}
+	}
+
+_unpack_tarball() {
+	echo "Unpacking tarball ${_PACKAGE} ..."
+        mkdir -p ${_WORKDIR}/${_APP}
+	tar -xvf ${_WORKDIR}/${_PACKAGE} --directory ${_WORKDIR}/${_APP} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-untar
+	}
+
+_build_package() {
+        echo "Building Adaptive Computing Moab Workload Manager"
+	${_WORKDIR}/${_APP}/configure --prefix=${_INSTALLDIR} --with-homedir=${_INSTALLDIR} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-build
+}
+
+_install_package() {
+        echo "Installing Adaptive Computing Moab Workload Manager"
+	pushd
+        cd ${_WORKDIR}/${_APP}/
+	make install 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-install
+	popd
+}
+
+_install_license() {
+	cp ${_WORKDIR}/${_LICENSE} ${_INSTALLDIR}/etc/moab.lic
+}
+
+_moab_config() {
+	systemctl stop clusterware-torque-sched.service
+	systemctl disable clusterware-torque-sched.service
+	cp -v ${_RESOURCES_DIR}/moab.service /etc/systemd/system/multi-user.target.wants/moab.service
+	systemctl daemon-reload
+	cp -v ${_RESOURCES_DIR}/moab.cfg ${_INSTALLDIR}/etc/moab.cfg
+	systemctl start moab.service
+}
+
+_install_app() {
+    local bucket fetched_from_s3
+    if [ ! -f ${_WORKDIR}/${_PACKAGE} -a ! -f ${_WORKDIR}/${_LICENSE} ]; then
+        files_load_config cluster-customizer
+        if [ "${cw_CLUSTER_CUSTOMIZER_bucket}" ]; then
+            bucket="${cw_CLUSTER_CUSTOMIZER_bucket}"
+        elif network_is_ec2; then
+            bucket="s3://alces-flight-$(network_ec2_hashed_account)"
+        else
+            echo "Unable to determine bucket name for application download."
+            return 0
+        fi
+        _fetch_app_from_s3 "${bucket}"
+        fetched_from_s3=true
+    fi
+    if [ -f ${_WORKDIR}/${_PACKAGE} -a -f ${_WORKDIR}/${_LICENSE} ]; then
+        _setup_logdir
+        _install_prereqs
+        _unpack_tarball
+        if _build_package; then
+            if [ "${fetched_from_s3}" ]; then
+                rm -f ${_WORKDIR}/${_PACKAGE} 
+            fi
+	    _install_package
+	    _install_license
+	    _moab_config
+            _show_completed_message
+        else
+            echo "WARNING: Ansys Fluent failed to install."
+        fi
+    else
+        _show_help
+    fi
+}
+
+main() {
+    local role
+    role="$2"
+    if [ "$role" == "master" ]; then
+        _install_app
+    else
+       echo "Unable to determine role for instance"
+       exit 1
+    fi
+}
+
+setup
+require files
+require network
+require handler
+require ruby
+require distro
+require serviceware
+
+_VENDOR=Adaptive Computing
+_APP_NAME=Moab
+_VENDOR_EMAIL=info@adaptivecomputing.com
+_APP=moab
+_APP_VER=9.1.1
+_PACKAGE=moab-9.1.1-el7.tar.gz
+_LICENSE=moab-license.lic
+_WORKDIR=/tmp
+_LOGDIR=/var/log/clusterware/customizer/feature-${_APP}/${_APP_VER}
+_INSTALLDIR=/opt/clusterware/opt/moab
+_RESOURCES_DIR="$(handler_dir)/../resources"
+
+main "$@"

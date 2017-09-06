@@ -1,0 +1,23 @@
+[Unit]
+Description=Moab
+After=network.target
+
+[Service]
+Environment=PATH=/opt/clusterware/opt/moab/bin:/opt/clusterware/opt/moab:/opt/clusterware/opt/torque:/sbin:/bin:/usr/sbin:/usr/bin
+Environment=LD_LIBRARY_PATH=/opt/clusterware/opt/torque/lib
+Environment=MOABHOMEDIR=/opt/clusterware/opt/moab
+ExecStart=/opt/clusterware/opt/moab/sbin/moab -d
+
+# Define kill parameters for shutdown.
+#
+# Local moab process should be terminated with a SIGTERM rather than using
+# "mschedctl -k" since it will shutdown the active moab daemon in an HA
+# configuration.
+#
+KillMode=control-group
+KillSignal=SIGTERM
+
+User=root
+
+[Install]
+WantedBy=multi-user.target

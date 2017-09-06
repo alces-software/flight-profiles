@@ -173,6 +173,13 @@ profiles:
     - resources/modulefile
     tags:
     - software
+  moab-9.1.1:
+    manifest:
+    - resources/moab.cfg
+    - resources/moab.service
+    - start.d/install.sh
+    tags:
+    - software
   monitor-setup:
     manifest:
     - configure.d/monitor-setup
