@@ -3,7 +3,7 @@ Description=Moab
 After=network.target
 
 [Service]
-Environment=PATH=/opt/clusterware/opt/moab/bin:/opt/clusterware/opt/moab:/opt/clusterware/opt/torque:/sbin:/bin:/usr/sbin:/usr/bin
+Environment=PATH=/opt/clusterware/opt/moab/bin:/opt/clusterware/opt/moab/sbin:/opt/clusterware/opt/moab:/opt/clusterware/opt/torque:/sbin:/bin:/usr/sbin:/usr/bin
 Environment=LD_LIBRARY_PATH=/opt/clusterware/opt/torque/lib
 Environment=MOABHOMEDIR=/opt/clusterware/opt/moab
 ExecStart=/opt/clusterware/opt/moab/sbin/moab -d

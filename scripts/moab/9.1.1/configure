@@ -109,15 +109,19 @@ _unpack_tarball() {
 
 _build_package() {
         echo "Building Adaptive Computing Moab Workload Manager"
-	${_WORKDIR}/${_APP}/configure --prefix=${_INSTALLDIR} --with-homedir=${_INSTALLDIR} 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-build
+	pushd . > ${_LOGDIR}/${_APP}-${PPID}-build 2>&1
+	cd ${_WORKDIR}/${_APP}/moab-9.1.1-el7
+	${_WORKDIR}/${_APP}/moab-9.1.1-el7/configure --prefix=${_INSTALLDIR} --with-homedir=${_INSTALLDIR} > ${_LOGDIR}/${_APP}-${PPID}-build 2>&1
+	popd > ${_LOGDIR}/${_APP}-${PPID}-build 2>&1
 }
 
 _install_package() {
         echo "Installing Adaptive Computing Moab Workload Manager"
-	pushd
-        cd ${_WORKDIR}/${_APP}/
-	make install 2>&1 > ${_LOGDIR}/${_APP}-${PPID}-install
-	popd
+	pushd . > ${_LOGDIR}/${_APP}-${PPID}-install 2>&1
+        cd ${_WORKDIR}/${_APP}/moab-9.1.1-el7
+	export PATH=/opt/clusterware/opt/moab/sbin:/opt/clusterware/opt/moab/bin:${PATH}
+	make install > ${_LOGDIR}/${_APP}-${PPID}-install 2>&1
+	popd > ${_LOGDIR}/${_APP}-${PPID}-install 2>&1
 }
 
 _install_license() {
@@ -131,6 +135,7 @@ _moab_config() {
 	systemctl daemon-reload
 	cp -v ${_RESOURCES_DIR}/moab.cfg ${_INSTALLDIR}/etc/moab.cfg
 	systemctl start moab.service
+	qmgr -c 'set server submit_hosts = login1'
 }
 
 _install_app() {
@@ -161,7 +166,7 @@ _install_app() {
 	    _moab_config
             _show_completed_message
         else
-            echo "WARNING: Ansys Fluent failed to install."
+            echo "WARNING: Adaptive Computing Moab failed to install."
         fi
     else
         _show_help
@@ -187,7 +192,7 @@ require ruby
 require distro
 require serviceware
 
-_VENDOR=Adaptive Computing
+_VENDOR="Adaptive Computing"
 _APP_NAME=Moab
 _VENDOR_EMAIL=info@adaptivecomputing.com
 _APP=moab
