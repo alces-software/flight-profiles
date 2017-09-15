@@ -1,1 +1,1 @@
-initialize.d/enable-flight-tutorials
+configure.d/enable-flight-tutorials
