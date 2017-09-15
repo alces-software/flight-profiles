@@ -14,6 +14,11 @@ if [ "$1" == "--dry-run" ]; then
     shift
 fi
 
+if [ "$1" == "--dryrun" ]; then
+    echo "Unrecognised option --dryrun. Perhaps you meant '--dry-run'?"
+    exit 1
+fi
+
 assert_unchanged() {
     if [ $(git status --porcelain | wc -l) -gt 0 ]; then
         echo "Local changes found. Refusing to sync.  Maybe 'git stash'?"
