@@ -257,3 +257,9 @@ profiles:
     tags:
     - startup
     - software
+  web-terminal:
+    manifest:
+    - configure.d/configure
+    tags:
+    - config
+    - hidden

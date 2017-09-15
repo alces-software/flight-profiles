@@ -1,1 +1,1 @@
-configure.d/enable-web-terminal
+configure.d/configure
