@@ -75,4 +75,4 @@ require ruby
 
 _ALCES="${cw_ROOT}"/bin/alces
 
-handler_tee main "$@"
+main "$@"
