@@ -128,6 +128,11 @@ profiles:
     - start.d/start-enginframe
     tags:
     - software
+  forge-personality:
+    manifest:
+    - node-started.d/configuration-installer.sh
+    - node-started.d/scheduler-installer.sh
+    - node-started.d/software-installer.sh
   freesurfer-6.0.0:
     manifest:
     - resources/modulefile
@@ -218,6 +223,9 @@ profiles:
     tags:
     - config
     - hidden
+  queue-personality:
+    manifest:
+    - node-started.d/queue-creator.sh
   set-admin-password:
     manifest:
     - configure.d/set-admin-password
