@@ -43,6 +43,7 @@ main() {
   fi
 
   export cw_UI_disable_spinner=true
+  export HOME=/root
   ruby_run <<RUBY
 require 'yaml'
 
@@ -55,11 +56,11 @@ p_file = '${cw_ROOT}/etc/personality.yml'
 begin
   if File.exists?(p_file)
     personality = YAML.load_file(p_file)
-    if software = personality[:software]
+    if software = personality['software']
       (software['gridware'] || []).each do |pkg|
         log("Installing package: #{pkg}")
         IO.popen(['${_ALCES}', 'gridware', 'install',
-                  pkg,
+                  '--yes', pkg,
                   :err=>[:child, :out]]) do |io|
           log(io.readline) until io.eof?
         end
@@ -68,7 +69,7 @@ begin
       (software['profile'] || []).each do |profile|
         log("Applying software profile: #{profile}")
         IO.popen(['${_ALCES}', 'customize', 'apply',
-                  profile,
+                  "feature/#{profile}",
                   :err=>[:child, :out]]) do |io|
           log(io.readline) until io.eof?
         end
@@ -88,7 +89,7 @@ begin
                   :err=>[:child, :out]]) do |io|
             log(io.readline) until io.eof?
           end
-          if $?.success? &&
+          if \$?.success? &&
             (!container.include?('/') ||
              match = Regexp.new('^alces/gridware-(.*)').match(container))
             ctr_name = (match && match[1]) || container
@@ -110,6 +111,7 @@ RUBY
 }
 
 setup
+require distro
 require files
 require ruby
 

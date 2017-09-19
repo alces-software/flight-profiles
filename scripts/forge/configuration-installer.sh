@@ -54,14 +54,14 @@ p_file = '${cw_ROOT}/etc/personality.yml'
 begin
   if File.exists?(p_file)
     personality = YAML.load_file(p_file)
-    if profiles = personality['configure']
+    if profiles = personality['profiles']
       all = profiles['all'] || []
       master = profiles['master'] || []
       slave = profiles['slave'] || []
       (all + master).each do |profile|
         log("Applying profile: #{profile}")
         IO.popen(['${_ALCES}', 'customize', 'apply',
-                  profile,
+                  "feature/#{profile}",
                   :err=>[:child, :out]]) do |io|
           log(io.readline) until io.eof?
         end

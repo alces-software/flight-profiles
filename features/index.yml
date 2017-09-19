@@ -128,11 +128,18 @@ profiles:
     - start.d/start-enginframe
     tags:
     - software
+  flight-core:
+    manifest:
+    - initialize.d/patch-gridware.sh
+    tags:
+    - startup
   forge-personality:
     manifest:
     - node-started.d/configuration-installer.sh
     - node-started.d/scheduler-installer.sh
     - node-started.d/software-installer.sh
+    tags:
+    - config
   freesurfer-6.0.0:
     manifest:
     - resources/modulefile
@@ -226,6 +233,8 @@ profiles:
   queue-personality:
     manifest:
     - node-started.d/queue-creator.sh
+    tags:
+    - config
   set-admin-password:
     manifest:
     - configure.d/set-admin-password

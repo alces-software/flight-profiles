@@ -46,20 +46,35 @@ def log(message)
   @log.puts("#{Time.now.strftime('%b %e %H:%M:%S')} #{message}")
 end
 
+class Retry < RuntimeError; end
+retries = 0
+
 p_file = '${cw_ROOT}/etc/personality.yml'
 begin
   if File.exists?(p_file)
     personality = YAML.load_file(p_file)
     if queues = personality['queues']
       queues.each do |spec, params|
-        desired = params['desired']
-        min = params['min']
-        max = params['max']
+        desired = params['desired'].to_s
+        min = params['min'].to_s
+        max = params['max'].to_s
         log("Adding queue: #{spec} (#{desired}/#{min}-#{max})")
-        IO.popen(['${_ALCES}', 'compute', 'addq',
-                  spec, desired, min, max,
-                  :err=>[:child, :out]]) do |io|
-          log(io.readline) until io.eof?
+        begin
+          IO.popen(['${_ALCES}', 'compute', 'addq',
+                    spec, desired, min, max,
+                    :err=>[:child, :out]]) do |io|
+            while !io.eof?
+              line = io.readline
+              log(line)
+              raise Retry.new if line =~ /operation in progress/
+            end
+          end
+        rescue Retry
+          if (retries += 1) < 20
+            log('Operation in progress; retrying in 6s...')
+            sleep 6
+            retry
+          end
         end
       end
     end

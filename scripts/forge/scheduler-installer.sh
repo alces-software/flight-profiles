@@ -37,13 +37,26 @@ setup() {
 }
 
 main() {
+  local hostname
+  
   files_load_config instance config/cluster
   if [ "${cw_INSTANCE_role}" != "master" ]; then
       return 0
   fi
 
+  hostname=$(hostname -s)
+  member_load_vars $hostname
+
   ruby_run <<RUBY
 require 'yaml'
+
+SCHEDULER_HANDLERS = {
+  'gridscheduler' => 'cluster-sge',
+  'openlava' => 'cluster-openlava',
+  'pbspro' => 'cluster-pbspro',
+  'slurm' => 'cluster-slurm',
+  'torque' => 'cluster-torque'
+}
 
 def log(message)
   @log ||= File.open('/var/log/clusterware/scheduler-installer.log', 'a')
@@ -56,9 +69,19 @@ begin
     personality = YAML.load_file(p_file)
     if scheduler = personality['scheduler']
       log("Enabling scheduler profile: #{scheduler}")
-      IO.popen(['${_ALCES}', 'customize', 'apply',
-                scheduler,
+      IO.popen(['${_ALCES}', 'handler', 'enable',
+                SCHEDULER_HANDLERS[scheduler],
                 :err=>[:child, :out]]) do |io|
+        log(io.readline) until io.eof?
+      end
+      IO.popen(["${cw_ROOT}/etc/handlers/#{SCHEDULER_HANDLERS[scheduler]}/configure",
+                :err=>[:child, :out]]) do |io|
+        log(io.readline) until io.eof?
+      end
+      IO.popen(["${cw_ROOT}/etc/handlers/#{SCHEDULER_HANDLERS[scheduler]}/member-join",
+                :err=>[:child, :out]], 'r+') do |io|
+        io.puts("${hostname} ${cw_MEMBER_ip} ${cw_MEMBER_role} ${cw_MEMBER_tags}")
+        io.close_write
         log(io.readline) until io.eof?
       end
       log("Configuring slave for scheduler: #{scheduler}")
@@ -78,6 +101,7 @@ RUBY
 setup
 require files
 require ruby
+require member
 
 _ALCES="${cw_ROOT}"/bin/alces
 
