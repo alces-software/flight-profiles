@@ -68,6 +68,8 @@ main() {
 
 setup
 require distro
+require files
 require handler
+require network
 
 main "$@"
