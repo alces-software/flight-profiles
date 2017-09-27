@@ -58,47 +58,63 @@ begin
     personality = YAML.load_file(p_file)
     if collections = personality['collections']
       collections.each do |collection_url|
-        uri = URI.parse(collection_url)
-        uri.query = [
-          uri.query,
-          'fields[collection]=name,gridware,customizers',
-          'include=gridware,customizers',
-          'fields[gridware]=name,version,packageType',
-        ].compact.join('&')
+        begin
+          uri = URI.parse(collection_url)
+          uri.query = [
+            uri.query,
+            'fields[collection]=name,gridware,customizers',
+            'include=gridware,customizers',
+            'fields[gridware]=name,version,packageType',
+          ].compact.join('&')
 
-        log("Downloading collection: #{uri}")
-        response = JSON.parse(uri.open.read)
-        collection_name = response['data']['attributes']['name']
-        log("Processing collection #{collection_name}")
+          log("Downloading collection from #{uri}")
+          response = JSON.parse(uri.open.read)
+        rescue OpenURI::HTTPError
+          log("Download failed: #{$!.message}")
+          next
+        else
+          collection_name = response['data']['attributes']['name']
+          log("Processing collection #{collection_name}")
 
-        gridware = response['included'].select do |i|
-          i['type'] == 'gridware'
-        end
-        (gridware || []).each do |g|
-          attrs = g['attributes']
-          pkg = [attrs['packageType'], attrs['name'], attrs['version']].join('/')
-          log("Installing package: #{pkg}")
-          IO.popen(['${_ALCES}', 'gridware', 'install',
-                    '--yes', pkg,
-                    :err=>[:child, :out]]) do |io|
-            log(io.readline) until io.eof?
+          gridware = response['included'].select do |i|
+            i['type'] == 'gridware'
           end
-        end
-
-        customizers = response['included'].select do |i|
-          i['type'] == 'customizers'
-        end
-        (customizers || []).each do |c|
-          attrs = c['attributes']
-          name = attrs['s3Url'].split('/')[-2,2].join('/')
-          log("Applying software profile: #{name}")
-          IO.popen(['${_ALCES}', 'customize', 'apply',
-                    name,
-                    :err=>[:child, :out]]) do |io|
-            log(io.readline) until io.eof?
+          (gridware || []).each do |g|
+            begin
+              attrs = g['attributes']
+              pkg = [attrs['packageType'], attrs['name'], attrs['version']].join('/')
+              log("Installing package: #{pkg}")
+              IO.popen(['${_ALCES}', 'gridware', 'install',
+                        '--yes', pkg,
+                        :err=>[:child, :out]]) do |io|
+                log(io.readline) until io.eof?
+              end
+            rescue
+              log("Installing package failed: #{$!.message}")
+              next
+            end
           end
-        end
 
+          customizers = response['included'].select do |i|
+            i['type'] == 'customizers'
+          end
+          (customizers || []).each do |c|
+            begin
+              attrs = c['attributes']
+              name = attrs['s3Url'].split('/')[-2,2].join('/')
+              log("Applying software profile: #{name}")
+              IO.popen(['${_ALCES}', 'customize', 'apply',
+                        name,
+                        :err=>[:child, :out]]) do |io|
+                log(io.readline) until io.eof?
+              end
+            rescue
+              log("Applying software profile failed: #{$!.message}")
+              next
+            end
+          end
+
+        end
       end
     end
   end
