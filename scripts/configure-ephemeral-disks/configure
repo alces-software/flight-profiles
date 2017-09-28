@@ -100,6 +100,19 @@ main() {
         fi
     done
 
+    # Check for NVMe devices (such as on i3 and f1 instances).
+    for a in 0 1 2 3 4 5 6 7; do
+      if [ -b /dev/nvme${a}n1 ]; then
+          # check that the NVMe device isn't mounted as the rootfs (such as on c5 instances).
+          rootdev=$(findmnt -T / -o SOURCE -n)
+          if [[ "${rootdev}" != "/dev/nvme${a}n1"* ]]; then
+              nr_devs=$(($nr_devs+1))
+              devs="$devs /dev/nvme${a}n1"
+              umount /dev/nvme${a}n1 &>/dev/null
+          fi
+      fi
+    done
+
     if [ "$nr_devs" == "0" ]; then
         if [ "${cw_CLUSTER_ephemeral_swap}" == "always" ]; then
             echo "No ephemeral storage detected. Activatating automated swap space fulfilment."
@@ -128,18 +141,22 @@ main() {
         _configure_scratch
     else
         vg_total=$(vgdisplay -c ephemeral | awk -F ':' '{print $12}')
+        if [ "${cw_CLUSTER_ephemeral_swap_size_mib}" ]; then
+            cw_CLUSTER_ephemeral_swap_size_kib=$((${cw_CLUSTER_ephemeral_swap_size_mib}*1024))
+            cw_CLUSTER_ephemeral_swap_max_kib=$((${cw_CLUSTER_ephemeral_swap_max_mib}*1024))
+        fi
         if [ "${cw_CLUSTER_ephemeral_swap_size_kib:-0}" == 0 ]; then
             swap_size=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
         else
             swap_size=${cw_CLUSTER_ephemeral_swap_size_kib}
         fi
         if [ "${cw_CLUSTER_ephemeral_swap_max_kib:-0}" -gt 0 -a "${swap_size}" -gt "${cw_CLUSTER_ephemeral_swap_max_kib:-0}" ]; then
-            swap_size="${cw_CLUSTER_ephemeral_swap_max_kib}"
+            swap_size=${cw_CLUSTER_ephemeral_swap_max_kib}
         fi
         vg_remain=$(( ${vg_total} - ${swap_size} ))
-        # See if we have more than 2GB available after enabling swap.
-        if (( ${vg_remain} < 2092152 )); then
-            echo "Skipping scratch creation: selected size of ${swap_size}KiB for swap would leave ${vg_remain}KiB"
+        # See if we have more than 1GiB available after enabling swap.
+        if (( ${vg_remain} < 1073741824 )); then
+            echo "Skipping scratch creation: ${swap_size}KiB for swap leaves only ${vg_remain}KiB for scratch (less than 1GiB)"
             lvcreate -Wy -n swap -l 100%FREE ephemeral
         else
             lvcreate -Wy -n swap -L ${swap_size}K ephemeral
