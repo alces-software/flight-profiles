@@ -82,6 +82,11 @@ begin
                   :err=>[:child, :out]]) do |io|
           log(io.readline) until io.eof?
         end
+        IO.popen(['${_ALCES}', 'customize', 'slave',
+                  'add', "feature/configure-docker",
+                  :err=>[:child, :out]]) do |io|
+          log(io.readline) until io.eof?
+        end
         containers.each do |container|
           log("Pulling container: #{container}")
           IO.popen(['${_ALCES}', 'gridware', 'docker',
