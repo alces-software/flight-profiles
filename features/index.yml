@@ -274,3 +274,9 @@ profiles:
     - resources/autoscaling-handler.patch
     tags:
     - config
+  web-terminal:
+    manifest:
+    - configure.d/configure
+    tags:
+    - config
+    - hidden
