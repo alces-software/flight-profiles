@@ -1,0 +1,1 @@
+../../../scripts/queues/queue-manager.sh
