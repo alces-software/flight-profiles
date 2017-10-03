@@ -43,6 +43,7 @@ _queues_cluster_uuid() {
   echo "${cw_CLUSTER_uuid}"
 }
 
+_QUEUES_ENDPOINT_URL=http://localhost:4003
 _queues_endpoint() {
   local uuid
   uuid="$(_queues_cluster_uuid)"
@@ -55,78 +56,7 @@ main() {
       return 0
   fi
 
-  ruby_run <<RUBY
-require 'json'
-require 'open-uri'
-
-def log(message)
-  @log ||= File.open('/var/log/clusterware/queue-creator-2', 'a')
-  @log.puts("#{Time.now.strftime('%b %e %H:%M:%S')} #{message}")
-end
-
-class Retry < RuntimeError; end
-retries = 0
-
-ACTION_TO_COMPUTE_COMMAND = {
-  'CREATE' => 'addq',
-  'MODIFY' => 'modq',
-  'DELETE' => 'delq',
-}.freeze
-
-ACTION_TO_VERB = {
-  'CREATE' => 'Adding',
-  'MODIFY' => 'Modifying',
-  'DELETE' => 'Deleting',
-}.freeze
-
-begin
-  uri = URI.parse('$(_queues_endpoint)')
-  uri.query = [
-    uri.query,
-    'filter[status]=PENDING',
-    'filter[action]=CREATE,MODIFY,DELETE',
-  ].compact.join('&')
-  log("Downloading pending compute queue actions from #{uri}")
-  response = JSON.parse(uri.open.read)
-rescue OpenURI::HTTPError
-  log("Download failed: #{\$!.message}")
-else
-  response['data'].each do |queue_action|
-    self_link = queue_action['links']['self']
-    # XXX Mark as in progress
-    # XXX How do we send API requests from within Ruby?
-    
-
-    attrs = queue_action['attributes']
-    spec = attrs['name']
-    action = attrs['action']
-    desired = attrs['desired'].to_s
-    min = attrs['min'].to_s
-    max = attrs['max'].to_s
-    uuid = queue_action['id']
-    log("#{ACTION_TO_VERB[action]} queue: #{spec} (#{desired}/#{min}-#{max}) (#{uuid})")
-    begin
-      IO.popen(['${_ALCES}', 'compute', ACTION_TO_COMPUTE_COMMAND[action],
-                spec, desired, min, max,
-                :err=>[:child, :out]]) do |io|
-        while !io.eof?
-          line = io.readline
-          log(line)
-          raise Retry.new if line =~ /operation in progress/
-        end
-      end
-    rescue Retry
-      if (retries += 1) < 20
-        log('Operation in progress; retrying in 6s...')
-        sleep 6
-        retry
-      end
-    end
-  end
-ensure
-  @log && @log.close
-end
-RUBY
+  ruby_exec "${script_dir}/../share/queue-manager.rb" "$(_queues_endpoint)" "${_ALCES}"
 }
 
 setup
