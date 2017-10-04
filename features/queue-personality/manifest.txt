@@ -1,1 +1,3 @@
+event-periodic.d/queue-manager.sh
 node-started.d/queue-creator.sh
+share/queue-manager.rb
