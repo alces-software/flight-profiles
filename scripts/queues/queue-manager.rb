@@ -46,7 +46,7 @@ class Resource < Struct.new(:id, :type, :attributes, :links)
 
   def patch(new_attributes)
     uri = URI(links.self)
-    Net::HTTP.start(uri.host, uri.path, use_ssl: uri.scheme == 'https') do |http|
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
       req = Net::HTTP::Patch.new(uri)
       req.content_type = 'application/vnd.api+json'
       req.body = {
@@ -69,11 +69,12 @@ def log(message)
 end
 
 def download_pending_actions(endpoint)
-  uri = URI.parse(endpoint)
+  uri = URI(endpoint)
   uri.query = [
     uri.query,
     'filter[status]=PENDING',
     'filter[action]=CREATE,MODIFY,DELETE',
+    'order=createdAt',
   ].compact.join('&')
   log("Downloading pending compute queue actions from #{uri}")
   JSON.parse(uri.open.read)
@@ -82,16 +83,16 @@ end
 def process_queue_action(queue_action)
   qa = queue_action.attributes
 
-  log("#{ACTION_TO_VERB[qa.action]} queue: #{qa.spec} (#{qa.desired}/#{qa.min}-#{qa.max}) (#{qa.id})")
+  log("#{ACTION_TO_VERB[qa.action]} queue: #{qa.spec} (#{qa.desired}/#{qa.min}-#{qa.max}) (#{queue_action.id})")
   begin
     cmd = [
       $ALCES,
       'compute',
       ACTION_TO_COMPUTE_COMMAND[qa.action],
       qa.spec,
-      qa.desired,
-      qa.min,
-      qa.max,
+      qa.desired.to_s,
+      qa.min.to_s,
+      qa.max.to_s,
       :err=>[:child, :out]
     ]
     IO.popen(cmd) do |io|
@@ -116,7 +117,8 @@ def main(endpoint)
   rescue OpenURI::HTTPError
     log("Download failed: #{$!.message}")
   else
-    response['data'].map{|queue_action| Resource.build(qa) }.each do |queue_action|
+    log("Processing #{response['data'].length} pending actions")
+    response['data'].map{|qa| Resource.build(qa) }.each do |queue_action|
       queue_action.patch(status: 'IN_PROGRESS')
       process_queue_action(queue_action)
       queue_action.patch(status: 'COMPLETE')

@@ -51,12 +51,15 @@ _queues_endpoint() {
 }
 
 main() {
+  local feature_dir
   files_load_config instance config/cluster
   if [ "${cw_INSTANCE_role}" != "master" ]; then
       return 0
   fi
 
-  ruby_exec "${script_dir}/../share/queue-manager.rb" "$(_queues_endpoint)" "${_ALCES}"
+  feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+
+  ruby_exec "${feature_dir}/share/queue-manager.rb" "${_ALCES}" "$(_queues_endpoint)"
 }
 
 setup
