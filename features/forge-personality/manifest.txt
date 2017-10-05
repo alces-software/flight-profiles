@@ -1,3 +1,4 @@
+node-started.d/collection-installer.sh
 node-started.d/configuration-installer.sh
 node-started.d/scheduler-installer.sh
 node-started.d/software-installer.sh
