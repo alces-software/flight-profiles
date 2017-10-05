@@ -43,7 +43,6 @@ _queues_cluster_uuid() {
   echo "${cw_CLUSTER_uuid}"
 }
 
-_QUEUES_ENDPOINT_URL=http://localhost:4003
 _queues_endpoint() {
   local uuid
   uuid="$(_queues_cluster_uuid)"
