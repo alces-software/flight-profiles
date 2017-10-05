@@ -74,7 +74,7 @@ def download_pending_actions(endpoint)
     uri.query,
     'filter[status]=PENDING',
     'filter[action]=CREATE,MODIFY,DELETE',
-    'order=createdAt',
+    'sort=createdAt',
   ].compact.join('&')
   log("Downloading pending compute queue actions from #{uri}")
   JSON.parse(uri.open.read)
