@@ -20,7 +20,6 @@
 # For more information on the Alces Clusterware, please visit:
 # https://github.com/alces-software/clusterware
 #==============================================================================
-
 setup() {
     local a xdg_config
     IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
@@ -38,38 +37,55 @@ setup() {
 }
 
 main() {
-  local master_ip token
-  distro_start_service docker
-  sleep 5  # allow time for Docker to start up
-
   files_load_config instance config/cluster
-
-  if [[ "${cw_INSTANCE_role}" == "master" ]]; then
-    mkdir -p /opt/gridware/docker/swarm
-
-    master_ip=$(network_get_iface_address "$(network_get_first_iface)")
-
-    docker swarm init --advertise-addr "${master_ip}" > /dev/null
-    docker swarm join-token -q worker > /opt/gridware/docker/swarm/token
-    docker network create -d overlay --attachable gridware-mpi > /dev/null
-    # TODO - specify a subnet for docker to use
-  else
-    if [ -f /opt/gridware/docker/swarm/token ]; then
-      files_load_config --optional config config/cluster
-      token=$(cat /opt/gridware/docker/swarm/token)
-      docker swarm join --token "${token}" "${cw_CLUSTER_master}:2377" > /dev/null
-    else
-      action_die "No Swarm token found at /opt/gridware/docker/swarm/token - cannot join swarm."
-    fi
+  if [ "${cw_INSTANCE_role}" != "master" ]; then
+      return 0
   fi
 
-  handler_run_hook gridware-docker-exports
+  ruby_run <<RUBY
+require 'yaml'
+
+def log(message)
+  @log ||= File.open('/var/log/clusterware/configuration-installer.log', 'a')
+  @log.puts("#{Time.now.strftime('%b %e %H:%M:%S')} #{message}")
+end
+
+p_file = '${cw_ROOT}/etc/personality.yml'
+begin
+  if File.exists?(p_file)
+    personality = YAML.load_file(p_file)
+    if profiles = personality['profiles']
+      all = profiles['all'] || []
+      master = profiles['master'] || []
+      slave = profiles['slave'] || []
+      (all + master).each do |profile|
+        log("Applying profile: #{profile}")
+        IO.popen(['${_ALCES}', 'customize', 'apply',
+                  "feature/#{profile}",
+                  :err=>[:child, :out]]) do |io|
+          log(io.readline) until io.eof?
+        end
+      end
+      (all + slave).each do |profile|
+        log("Configuring slave profile: #{profile}")
+        IO.popen(['${_ALCES}', 'customize', 'slave',
+                  'add', "feature/#{profile}",
+                  :err=>[:child, :out]]) do |io|
+          log(io.readline) until io.eof?
+        end
+      end
+    end
+  end
+ensure
+  @log && @log.close
+end
+RUBY
 }
 
 setup
-require distro
 require files
-require handler
-require network
+require ruby
+
+_ALCES="${cw_ROOT}"/bin/alces
 
 main "$@"

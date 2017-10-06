@@ -1,0 +1,1 @@
+../../../scripts/forge/collection-installer.sh

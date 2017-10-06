@@ -20,7 +20,6 @@
 # For more information on the Alces Clusterware, please visit:
 # https://github.com/alces-software/clusterware
 #==============================================================================
-
 setup() {
     local a xdg_config
     IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
@@ -38,38 +37,57 @@ setup() {
 }
 
 main() {
-  local master_ip token
-  distro_start_service docker
-  sleep 5  # allow time for Docker to start up
+  export cw_UI_disable_spinner=true
+  ruby_run <<RUBY
+require 'yaml'
 
-  files_load_config instance config/cluster
+def log(message)
+  @log ||= File.open('/var/log/clusterware/queue-creator.log', 'a')
+  @log.puts("#{Time.now.strftime('%b %e %H:%M:%S')} #{message}")
+end
 
-  if [[ "${cw_INSTANCE_role}" == "master" ]]; then
-    mkdir -p /opt/gridware/docker/swarm
+class Retry < RuntimeError; end
+retries = 0
 
-    master_ip=$(network_get_iface_address "$(network_get_first_iface)")
-
-    docker swarm init --advertise-addr "${master_ip}" > /dev/null
-    docker swarm join-token -q worker > /opt/gridware/docker/swarm/token
-    docker network create -d overlay --attachable gridware-mpi > /dev/null
-    # TODO - specify a subnet for docker to use
-  else
-    if [ -f /opt/gridware/docker/swarm/token ]; then
-      files_load_config --optional config config/cluster
-      token=$(cat /opt/gridware/docker/swarm/token)
-      docker swarm join --token "${token}" "${cw_CLUSTER_master}:2377" > /dev/null
-    else
-      action_die "No Swarm token found at /opt/gridware/docker/swarm/token - cannot join swarm."
-    fi
-  fi
-
-  handler_run_hook gridware-docker-exports
+p_file = '${cw_ROOT}/etc/personality.yml'
+begin
+  if File.exists?(p_file)
+    personality = YAML.load_file(p_file)
+    if queues = personality['queues']
+      queues.each do |spec, params|
+        desired = params['desired'].to_s
+        min = params['min'].to_s
+        max = params['max'].to_s
+        log("Adding queue: #{spec} (#{desired}/#{min}-#{max})")
+        begin
+          IO.popen(['${_ALCES}', 'compute', 'addq',
+                    spec, desired, min, max,
+                    :err=>[:child, :out]]) do |io|
+            while !io.eof?
+              line = io.readline
+              log(line)
+              raise Retry.new if line =~ /operation in progress/
+            end
+          end
+        rescue Retry
+          if (retries += 1) < 20
+            log('Operation in progress; retrying in 6s...')
+            sleep 6
+            retry
+          end
+        end
+      end
+    end
+  end
+ensure
+  @log && @log.close
+end
+RUBY
 }
 
 setup
-require distro
-require files
-require handler
-require network
+require ruby
+
+_ALCES="${cw_ROOT}"/bin/alces
 
 main "$@"

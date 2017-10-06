@@ -20,7 +20,6 @@
 # For more information on the Alces Clusterware, please visit:
 # https://github.com/alces-software/clusterware
 #==============================================================================
-
 setup() {
     local a xdg_config
     IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
@@ -37,39 +36,35 @@ setup() {
     kernel_load
 }
 
+_queues_cluster_uuid() {
+  if [ -z "${cw_CLUSTER_uuid}" ]; then
+      files_load_config config config/cluster
+  fi
+  echo "${cw_CLUSTER_uuid}"
+}
+
+_queues_endpoint() {
+  local uuid
+  uuid="$(_queues_cluster_uuid)"
+  echo "${_QUEUES_ENDPOINT_URL:-https://launch.alces-flight.com}/api/v1/clusters/${uuid}/compute-queue-actions"
+}
+
 main() {
-  local master_ip token
-  distro_start_service docker
-  sleep 5  # allow time for Docker to start up
-
+  local feature_dir
   files_load_config instance config/cluster
-
-  if [[ "${cw_INSTANCE_role}" == "master" ]]; then
-    mkdir -p /opt/gridware/docker/swarm
-
-    master_ip=$(network_get_iface_address "$(network_get_first_iface)")
-
-    docker swarm init --advertise-addr "${master_ip}" > /dev/null
-    docker swarm join-token -q worker > /opt/gridware/docker/swarm/token
-    docker network create -d overlay --attachable gridware-mpi > /dev/null
-    # TODO - specify a subnet for docker to use
-  else
-    if [ -f /opt/gridware/docker/swarm/token ]; then
-      files_load_config --optional config config/cluster
-      token=$(cat /opt/gridware/docker/swarm/token)
-      docker swarm join --token "${token}" "${cw_CLUSTER_master}:2377" > /dev/null
-    else
-      action_die "No Swarm token found at /opt/gridware/docker/swarm/token - cannot join swarm."
-    fi
+  if [ "${cw_INSTANCE_role}" != "master" ]; then
+      return 0
   fi
 
-  handler_run_hook gridware-docker-exports
+  feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+
+  ruby_exec "${feature_dir}/share/queue-manager.rb" "${_ALCES}" "$(_queues_endpoint)"
 }
 
 setup
-require distro
 require files
-require handler
-require network
+require ruby
+
+_ALCES="${cw_ROOT}"/bin/alces
 
 main "$@"
