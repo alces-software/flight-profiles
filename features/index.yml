@@ -111,9 +111,8 @@ profiles:
   enginframe-2015.1:
     manifest:
     - configure.d/install-enginframe
+    - resources/alces-flight-www/enginframe/attributes.json.tpl
     - resources/alces-flight-www/etc/server-https.d/enginframe.conf
-    - resources/alces-flight-www/resource/enginframe/config.yml
-    - resources/alces-flight-www/resource/enginframe/htdocs/img/resource.png
     - resources/efinstall.config
     - start.d/start-enginframe
     tags:
@@ -121,9 +120,8 @@ profiles:
   enginframe-2017.0:
     manifest:
     - configure.d/install-enginframe
+    - resources/alces-flight-www/enginframe/attributes.json.tpl
     - resources/alces-flight-www/etc/server-https.d/enginframe.conf
-    - resources/alces-flight-www/resource/enginframe/config.yml
-    - resources/alces-flight-www/resource/enginframe/htdocs/img/resource.png
     - resources/efinstall.config
     - start.d/start-enginframe
     tags:
@@ -287,6 +285,12 @@ profiles:
     tags:
     - startup
     - software
+  web-terminal:
+    manifest:
+    - configure.d/configure
+    tags:
+    - config
+    - hidden
   zero-node-autoscaling:
     manifest:
     - configure.d/add-groups
@@ -294,9 +298,3 @@ profiles:
     - resources/autoscaling-handler.patch
     tags:
     - config
-  web-terminal:
-    manifest:
-    - configure.d/configure
-    tags:
-    - config
-    - hidden
