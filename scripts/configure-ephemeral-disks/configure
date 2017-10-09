@@ -130,7 +130,7 @@ main() {
         vgcreate ephemeral ${devs}
     else
         yum install -y -e0 mdadm lvm2
-        mdadm --create 0 --level=0 --run --raid-devices=${nr_devs} ${devs}
+        mdadm --create 0 --level=0 --run --force --raid-devices=${nr_devs} ${devs}
         pvcreate -f /dev/md/0
         vgcreate ephemeral /dev/md/0
     fi
