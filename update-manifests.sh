@@ -3,7 +3,7 @@ cd $(dirname "$0")
 for a in machines/*/* features/*; do
   if [[ -d "$a" ]]; then
     pushd "$a"
-    find -H */* -type f -print > manifest.txt
+    find -H */* -type f -print | sort > manifest.txt
     popd
   fi
 done
