@@ -39,20 +39,21 @@ setup() {
 
 main() {
     local checksum
-    checksum="dbc02b17f15680c378c1ec9e4d80956d"
+    checksum="f9fb71966f03c31f0f2b23aacc9146b4"
+    VERSION="2.3.2"
     
     cd /tmp
-    wget https://github.com/singularityware/singularity/releases/download/2.3/singularity-2.3.tar.gz
+    wget https://github.com/singularityware/singularity/releases/download/$VERSION/singularity-$VERSION.tar.gz
     
-    if [ "$checksum" != "$(md5sum singularity-2.3.tar.gz |awk '{print $1}')" ] ; then
+    if [ "$checksum" != "$(md5sum singularity-$VERSION.tar.gz |awk '{print $1}')" ] ; then
         echo "Sorry, the downloaded tarball has a mismatching checksum"
         exit 1
     fi
     
-    tar xzf singularity-2.3.tar.gz
-    cd singularity-2.3
+    tar xzf singularity-$VERSION.tar.gz
+    cd singularity-$VERSION
     
-    ./configure --prefix=/usr/local/
+    ./configure --prefix=/opt/singularity/
     make
     make install
 }
