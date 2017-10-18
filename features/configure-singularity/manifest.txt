@@ -1,1 +1,2 @@
 configure.d/configure-singularity
+resources/modulefile

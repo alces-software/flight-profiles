@@ -67,6 +67,7 @@ profiles:
   configure-singularity:
     manifest:
     - configure.d/configure-singularity
+    - resources/modulefile
     tags:
     - software
   configure-users:
