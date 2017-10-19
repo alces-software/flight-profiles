@@ -3,7 +3,7 @@
 ## Alces HPC Software Stack - Compiler module file
 ## Copyright (c) 2017 Alces Software Ltd
 ##
-## path: apps/singularity/2.3.2
+## path: apps/singularity/2.4
 ################################################################################
 
 if { [info exists ::env(ALCES_TRACE)] } {
@@ -47,13 +47,13 @@ More information about this software can be found at the website:
 For further details regarding this module, including the environment modifications
 it will apply, execute:
 
-\tmodule show apps/singularity/2.3.2
+\tmodule show apps/singularity/2.4
 
 "
 }
 
 set     app     singularity
-set     version 2.3.2
+set     version 2.4
 set     appcaps SINGULARITY
 set     appdir  /opt/apps/singularity
 
@@ -65,14 +65,14 @@ module-whatis   "
               URL: http://singularity.lbl.gov/
 
              Name: singularity
-          Version: 2.3.2
-           Module: [alces pretty apps/singularity/2.3.2]
-      Module Path: /opt/apps/etc/modules/apps/singularity/2.3.2
+          Version: 2.4
+           Module: [alces pretty apps/singularity/2.4]
+      Module Path: /opt/apps/etc/modules/apps/singularity/2.4
      Package Path: /opt/apps/singularity
 
 For further information, execute:
 
-\tmodule help apps/singularity/2.3.2
+\tmodule help apps/singularity/2.4
 "
 
 prepend-path PATH ${appdir}/bin

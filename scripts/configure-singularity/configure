@@ -39,7 +39,7 @@ setup() {
 
 _install_singularity() {
     local checksum
-    checksum="f9fb71966f03c31f0f2b23aacc9146b4"
+    checksum="b05f2053b58fe15db06cfc5f3fa32fbd"
 
     cd /tmp
     wget https://github.com/singularityware/singularity/releases/download/$_VERSION/singularity-$_VERSION.tar.gz
@@ -99,7 +99,7 @@ EOF
 setup
 require handler
 
-_VERSION="2.3.2"
+_VERSION="2.4"
 _RESOURCES_DIR="$(handler_dir)/../resources"
 
 main "$@"
