@@ -41,6 +41,8 @@ profiles:
     - member-join.d/configure-beegfs
     tags:
     - software
+    description: Installs and configures BeeGFS for use on the cluster. See https://www.beegfs.io
+      for information.
   configure-clocksource:
     manifest:
     - configure.d/configure-clocksource
@@ -59,6 +61,7 @@ profiles:
     - start.d/start-docker
     tags:
     - software
+    description: Configures the node with Docker, including Gridware Docker enhancements.
   configure-ephemeral-disks:
     manifest:
     - configure.d/configure-ephemeral-disks
@@ -96,6 +99,7 @@ profiles:
     - configure.d/disable-hyperthreading
     tags:
     - config
+    description: Disables hyperthreading on the node.
   disable-thp:
     manifest:
     - configure.d/disable-thp
