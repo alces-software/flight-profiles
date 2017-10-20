@@ -1,0 +1,7 @@
+EnginFrame is an advanced, commercially supported HPC Portal in the industry, with a proven track record of successful production deployments within corporate networks and research clusters.
+
+EnginFrame enables efficient Inter-/Intranet access to HPC-enabled infrastructures. HPC clusters, data, licenses, batch & interactive applications can be accessed by any client using a standard browser.
+
+The open and evolutionary framework of EnginFrame is based on Java, XML and Web Services, and facilitates deployment of user-friendly, application- and data-oriented portals.
+
+Users and administrators can easily submit and control HPC applications, as well as monitor workload, data, licenses from within the same user dashboard, hiding the heterogeneity and complexity of the native interfaces.

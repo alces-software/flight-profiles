@@ -1,0 +1,5 @@
+Intel Parallel Studio is a comprehensive suite of development tools makes it simpler to build and modernize code with the latest techniques in vectorization, multithreading, multinode parallelization, and memory optimization. It enables C, C++, Fortran, and Python software developers to:
+
+ - Create faster code: Boost application performance that scales on current and future Intel platforms.
+ - Build code faster: Simplify the process of creating parallel code.
+ - Get priority support: Connect directly to Intel engineers for confidential answers to technical questions.

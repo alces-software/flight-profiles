@@ -1,0 +1,1 @@
+Developed in the Data Sciences Platform at the [Broad Institute](http://www.broadinstitute.org/), the Genome Analysis TookKit offers a wide variety of tools with a primary focus on variant discovery and genotyping. Its powerful processing engine and high-performance computing features make it capable of taking on projects of any size.

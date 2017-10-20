@@ -15,6 +15,9 @@ profiles:
     - resources/modulefile
     tags:
     - software
+    description: ANSYS Fluent software is a powerful computational fluid dynamics
+      (CFD) tool, empowering you to go further and faster as you optimize your product's
+      performance.
   ansys-fluent-v181:
     manifest:
     - resources/Ansys Fluent v181.desktop
@@ -23,6 +26,9 @@ profiles:
     - start.d/install.sh
     tags:
     - software
+    description: ANSYS Fluent software is a powerful computational fluid dynamics
+      (CFD) tool, empowering you to go further and faster as you optimize your product's
+      performance.
   appliance-domain-setup:
     manifest:
     - start.d/appliance-domain-setup
@@ -35,6 +41,7 @@ profiles:
     - resources/install-clusterflow
     tags:
     - startup
+    description: Cluster Flow is a simple and flexible bioinformatics pipeline tool.
   configure-beegfs:
     manifest:
     - configure.d/configure-beegfs
@@ -118,6 +125,9 @@ profiles:
     - resources/modulefile
     tags:
     - software
+    description: Ellexis Mistral monitors application I/O and I/O performance across
+      a cluster in order to identify rogue jobs and load balance shared storage by
+      automatically throttling I/O in problem jobs and applications.
   enginframe-2015.1:
     manifest:
     - configure.d/install-enginframe
@@ -127,6 +137,14 @@ profiles:
     - start.d/start-enginframe
     tags:
     - software
+    description: |-
+      EnginFrame is an advanced, commercially supported HPC Portal in the industry, with a proven track record of successful production deployments within corporate networks and research clusters.
+
+      EnginFrame enables efficient Inter-/Intranet access to HPC-enabled infrastructures. HPC clusters, data, licenses, batch & interactive applications can be accessed by any client using a standard browser.
+
+      The open and evolutionary framework of EnginFrame is based on Java, XML and Web Services, and facilitates deployment of user-friendly, application- and data-oriented portals.
+
+      Users and administrators can easily submit and control HPC applications, as well as monitor workload, data, licenses from within the same user dashboard, hiding the heterogeneity and complexity of the native interfaces.
   enginframe-2017.0:
     manifest:
     - configure.d/install-enginframe
@@ -136,6 +154,14 @@ profiles:
     - start.d/start-enginframe
     tags:
     - software
+    description: |-
+      EnginFrame is an advanced, commercially supported HPC Portal in the industry, with a proven track record of successful production deployments within corporate networks and research clusters.
+
+      EnginFrame enables efficient Inter-/Intranet access to HPC-enabled infrastructures. HPC clusters, data, licenses, batch & interactive applications can be accessed by any client using a standard browser.
+
+      The open and evolutionary framework of EnginFrame is based on Java, XML and Web Services, and facilitates deployment of user-friendly, application- and data-oriented portals.
+
+      Users and administrators can easily submit and control HPC applications, as well as monitor workload, data, licenses from within the same user dashboard, hiding the heterogeneity and complexity of the native interfaces.
   flight-core:
     manifest:
     - initialize.d/patch-gridware.sh
@@ -155,36 +181,61 @@ profiles:
     - start.d/install.sh
     tags:
     - software
+    description: An open source software suite for processing and analyzing (human)
+      brain MRI images.
   fsl-5.0.10:
     manifest:
     - resources/modulefile
     - start.d/install.sh
     tags:
     - software
+    description: FSL is a comprehensive library of analysis tools for FMRI, MRI and
+      DTI brain imaging data.
   gatk:
     manifest:
     - configure.d/install.sh
     - resources/modulefile
     tags:
     - software
+    description: Developed in the Data Sciences Platform at the [Broad Institute](http://www.broadinstitute.org/),
+      the Genome Analysis TookKit offers a wide variety of tools with a primary focus
+      on variant discovery and genotyping. Its powerful processing engine and high-performance
+      computing features make it capable of taking on projects of any size.
   gatk-queue:
     manifest:
     - configure.d/install.sh
     - resources/modulefile
     tags:
     - software
+    description: Queue is a pipelining system built to work natively with GATK as
+      well as other high-throughput sequence analysis software. Its user documentation
+      is hosted in the [GATK forum](http://gatkforums.broadinstitute.org/gatk/categories/queue).
+      Note that the Queue package includes the GATK within the Queue executable, so
+      you do not need to download GATK separately if you plan to run GATK exclusively
+      through Queue.
   gridscheduler:
     manifest:
     - initialize.d/enable-gridscheduler
     tags:
+    - scheduler
     - startup
     - software
+    description: Open Grid Scheduler/Grid Engine is a commercially supported open-source
+      batch-queuing system for distributed resource management. OGS/GE is based on
+      Sun Grid Engine, and maintained by the same group of external (i.e. non-Sun)
+      developers who started contributing code since 2001.
   intel-parallel-studio-xe:
     manifest:
     - configure.d/run-installer.sh
     - resources/modulefile
     tags:
     - software
+    description: |-
+      Intel Parallel Studio is a comprehensive suite of development tools makes it simpler to build and modernize code with the latest techniques in vectorization, multithreading, multinode parallelization, and memory optimization. It enables C, C++, Fortran, and Python software developers to:
+
+       - Create faster code: Boost application performance that scales on current and future Intel platforms.
+       - Build code faster: Simplify the process of creating parallel code.
+       - Get priority support: Connect directly to Intel engineers for confidential answers to technical questions.
   launch-compat:
     manifest:
     - configure.d/account-bucket-setup
@@ -204,6 +255,9 @@ profiles:
     - resources/modulefile
     tags:
     - software
+    description: MATLAB from MathWorks combines a desktop environment tuned for iterative
+      analysis and design processes with a programming language that expresses matrix
+      and array mathematics directly.
   moab-9.1.1:
     manifest:
     - resources/moab.cfg
@@ -221,8 +275,13 @@ profiles:
     manifest:
     - initialize.d/enable-openlava
     tags:
+    - scheduler
     - startup
     - software
+    description: OpenLava is an open source workload job scheduling software for HPC
+      clusters that supports a variety of HPC and analytic applications. With thousands
+      of downloads, and hundreds of installations, OpenLava is scalable and robust
+      - production proven on clusters with thousands of cores and jobs.
   password-auth:
     manifest:
     - configure.d/enable-password-auth
@@ -233,13 +292,22 @@ profiles:
     manifest:
     - initialize.d/enable-pbspro
     tags:
+    - scheduler
     - startup
     - software
+    description: PBS Professional® is Altair's industry-leading workload manager and
+      job scheduler for high-performance computing (HPC) environments.
   pgi:
     manifest:
     - configure.d/run-installer.sh
     tags:
     - software
+    description: PGI Community Edition includes a no-cost license to a recent release
+      of the PGI Fortran, C and C++ compilers and tools for multicore CPUs and NVIDIA
+      Tesla GPUs, including all OpenACC, OpenMP and CUDA Fortran features. The PGI
+      Community Edition enables development of performance-portable HPC applications
+      with uniform source code across the most widely used parallel processors and
+      systems.
   prime-depots:
     manifest:
     - start.d/download-and-install
@@ -270,14 +338,20 @@ profiles:
     manifest:
     - initialize.d/enable-slurm
     tags:
+    - scheduler
     - startup
     - software
+    description: Slurm is an open source, fault-tolerant, and highly scalable cluster
+      management and job scheduling system for large and small Linux clusters.
   starccm+:
     manifest:
     - configure.d/run-installer.sh
     - resources/modulefile
     tags:
     - software
+    description: Much more than just a CFD code, STAR-CCM+ is a complete multidisciplinary
+      platform for the simulation of products and designs operating under real-world
+      conditions.
   start-session:
     manifest:
     - start.d/start-session
@@ -300,8 +374,15 @@ profiles:
     manifest:
     - initialize.d/enable-torque
     tags:
+    - scheduler
     - startup
     - software
+    description: TORQUE provides control over batch jobs and distributed computing
+      resources. It is an advanced open-source product based on the original PBS project*
+      and incorporates the best of both community and professional development. It
+      incorporates significant advances in the areas of scalability, reliability,
+      and functionality and is currently in use at tens of thousands of leading government,
+      academic, and commercial sites throughout the world.
   web-terminal:
     manifest:
     - configure.d/configure
