@@ -317,8 +317,10 @@ profiles:
     - hidden
   queue-personality:
     manifest:
+    - configure.d/add-www-attributes
     - event-periodic.d/queue-manager.sh
     - node-started.d/queue-creator.sh
+    - resources/alces-flight-www/queue-management/attributes.json.tpl
     - share/queue-manager.rb
     tags:
     - config
