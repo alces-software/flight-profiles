@@ -239,6 +239,7 @@ profiles:
   launch-compat:
     manifest:
     - configure.d/account-bucket-setup
+    - configure.d/enable-web-terminal
     tags:
     - config
     - hidden
