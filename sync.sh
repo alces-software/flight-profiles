@@ -14,6 +14,11 @@ if [ "$1" == "--dry-run" ]; then
     shift
 fi
 
+if [ "$1" == "--dryrun" ]; then
+    echo "Unrecognised option --dryrun. Perhaps you meant '--dry-run'?"
+    exit 1
+fi
+
 assert_unchanged() {
     if [ $(git status --porcelain | wc -l) -gt 0 ]; then
         echo "Local changes found. Refusing to sync.  Maybe 'git stash'?"
@@ -62,7 +67,7 @@ else
     prefix_name="($1)"
 fi
 
-regions="${REGIONS:-eu-west-1 eu-west-2 eu-central-1 ap-northeast-1 ap-northeast-2 ap-southeast-1 ap-southeast-2 sa-east-1 us-east-1 us-east-2 us-west-1 us-west-2 ca-central-1}"
+regions="${REGIONS:-$(aws ec2 --output json describe-regions | grep RegionName | awk '{print $2}' | tr -d '"' | sort)}"
 
 cd $(dirname "$0")
 for r in $regions; do

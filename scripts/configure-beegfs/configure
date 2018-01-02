@@ -23,8 +23,35 @@
 hook="$1"
 role="$2"
 
+require ruby
+
+_get_personality_value() {
+  local key default
+  key="$1"
+  default="$2"
+  ruby_run <<RUBY
+require 'yaml'
+begin
+  pf = '${cw_ROOT}/etc/personality.yml'
+  if File.exists?(pf)
+    p = YAML.load_file(pf)
+    if p.key?('configure-beegfs') && value = p['configure-beegfs']['${key}']
+      puts value
+      exit!
+    end
+  end
+rescue
+  STDERR.puts $!.message
+ensure
+  puts '${default}'
+end
+RUBY
+}
+
+#RELEASE=$(_get_personality_value release 2015.03)
+RELEASE="$(_get_personality_value release 6)"
 wget -O /etc/yum.repos.d/beegfs-rhel7.repo \
-     http://www.beegfs.com/release/beegfs_2015.03/dists/beegfs-rhel7.repo
+     http://www.beegfs.com/release/beegfs_${RELEASE}/dists/beegfs-rhel7.repo
 
 case $role in
     mds)
@@ -37,9 +64,24 @@ case $role in
                 umount /dev/xvdc$a &>/dev/null
             fi
         done
+
+        # Check for NVMe devices (such as on i3 and f1 instances).
+        for a in 0 1 2 3 4 5 6 7; do
+          if [ -b /dev/nvme${a}n1 ]; then
+              # check that the NVMe device isn't mounted as the rootfs (such as on c5 instances).
+              ROOTDEV=$(findmnt -T / -o SOURCE -n)
+              if [[ "${ROOTDEV}" != "/dev/nvme${a}n1"* ]]; then
+                  NR_DEVS=$(($NR_DEVS+1))
+                  DEVS="$DEVS /dev/nvme${a}n1"
+                  echo deadline > /sys/block/nvme${a}n1/queue/scheduler
+                  umount /dev/nvme${a}n1 &>/dev/null
+              fi
+          fi
+        done
+
         mkdir -p /data/mdt
         yum install -y -e0 mdadm
-        mdadm --create 0 --level=0 --run --raid-devices=${NR_DEVS} ${DEVS}
+        mdadm --create 0 --level=0 --run --force --raid-devices=${NR_DEVS} ${DEVS}
 
         # xfs
         mkfs.xfs -l version=2,su=128k -isize=512 /dev/md/0
@@ -61,6 +103,7 @@ case $role in
         /etc/init.d/beegfs-meta start
         ;;
     oss)
+        OST_LAYOUT="$(_get_personality_value ost_layout separate)"
         NR_DEVS=0
         for a in a b c d e f g h i j k l m n o p q r s t u v w x; do
             if [ -b /dev/xvdc$a ]; then
@@ -72,14 +115,42 @@ case $role in
                 umount /dev/xvdc$a &>/dev/null
             fi
         done
-        mdadm --create 0 --level=0 --run --raid-devices=${NR_DEVS} ${DEVS}
-        mkfs.xfs /dev/md/0
-        mkdir -p /data/ost
-        mount -onoatime,nodiratime,logbufs=8,logbsize=256k,largeio,inode64,swalloc,allocsize=131072k \
-              /dev/md/0 /data/ost
-        echo deadline > /sys/block/md0/queue/scheduler
-        echo 4096 > /sys/block/md0/queue/nr_requests
-        echo 4096 > /sys/block/md0/queue/read_ahead_kb
+
+        # Check for NVMe devices (such as on i3 and f1 instances).
+        for a in 0 1 2 3 4 5 6 7; do
+          if [ -b /dev/nvme${a}n1 ]; then
+              # check that the NVMe device isn't mounted as the rootfs (such as on c5 instances).
+              ROOTDEV=$(findmnt -T / -o SOURCE -n)
+              if [[ "${ROOTDEV}" != "/dev/nvme${a}n1"* ]]; then
+                  NR_DEVS=$(($NR_DEVS+1))
+                  DEVS="$DEVS /dev/nvme${a}n1"
+                  #echo deadline > /sys/block/nvme${a}n1/queue/scheduler
+                  #echo 4096 > /sys/block/nvme${a}n1/queue/nr_requests
+                  echo 4096 > /sys/block/nvme${a}n1/queue/read_ahead_kb
+                  umount /dev/nvme${a}n1 &>/dev/null
+              fi
+          fi
+        done
+
+        if [ "$OST_LAYOUT" == "raid" ]; then
+            mdadm --create 0 --level=0 --run --force --raid-devices=${NR_DEVS} ${DEVS}
+            mkfs.xfs /dev/md/0
+            mkdir -p /data/ost
+            mount -onoatime,nodiratime,logbufs=8,logbsize=256k,largeio,inode64,swalloc,allocsize=131072k \
+                  /dev/md/0 /data/ost
+            echo deadline > /sys/block/md0/queue/scheduler
+            echo 4096 > /sys/block/md0/queue/nr_requests
+            echo 4096 > /sys/block/md0/queue/read_ahead_kb
+        else
+          c=0
+          for a in ${DEVS}; do
+            c=$(($c+1))
+            mkfs.xfs ${a}
+            mkdir -p /data/ost${c}
+            mount -onoatime,nodiratime,logbufs=8,logbsize=256k,largeio,inode64,swalloc,allocsize=131072k \
+                  ${a} /data/ost${c}
+          done
+        fi
         echo 5 > /proc/sys/vm/dirty_background_ratio
         echo 10 > /proc/sys/vm/dirty_ratio
         echo 50 > /proc/sys/vm/vfs_cache_pressure
@@ -92,6 +163,7 @@ case $role in
     *)
         # CLIENT
         yum install -y -e0 beegfs-client beegfs-helperd beegfs-utils
+        yum install -y -e0 http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
         mkdir /sharedscratch
         echo '/sharedscratch /etc/beegfs/beegfs-client.conf' > /etc/beegfs/beegfs-mounts.conf
         ;;

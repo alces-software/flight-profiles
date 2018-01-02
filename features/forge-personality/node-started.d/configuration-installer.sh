@@ -1,0 +1,1 @@
+../../../scripts/forge/configuration-installer.sh

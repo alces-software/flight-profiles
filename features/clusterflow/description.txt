@@ -1,0 +1,1 @@
+Cluster Flow is a simple and flexible bioinformatics pipeline tool.

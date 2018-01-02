@@ -1,0 +1,3 @@
+configure.d/add-groups
+configure.d/apply-patches
+resources/autoscaling-handler.patch

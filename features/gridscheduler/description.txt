@@ -1,0 +1,1 @@
+Open Grid Scheduler/Grid Engine is a commercially supported open-source batch-queuing system for distributed resource management. OGS/GE is based on Sun Grid Engine, and maintained by the same group of external (i.e. non-Sun) developers who started contributing code since 2001.

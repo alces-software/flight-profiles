@@ -8,6 +8,7 @@ profiles = {}
 Dir.entries(rootDir).select {|f| !File.directory? f}.sort.each do |profile_name|
   manifest_file = File.expand_path("#{profile_name}/manifest.txt", rootDir)
   tags_file = File.expand_path("#{profile_name}/tags.txt", rootDir)
+  description_file = File.expand_path("#{profile_name}/description.txt", rootDir)
 
   if File.exists?(manifest_file)
     profile = {}
@@ -18,6 +19,11 @@ Dir.entries(rootDir).select {|f| !File.directory? f}.sort.each do |profile_name|
     if File.exists?(tags_file)
       tags = File.read(tags_file).split("\n")
       profile['tags'] = tags
+    end
+
+    if File.exists?(description_file)
+      description = File.read(description_file)
+      profile['description'] = description.strip
     end
 
     if Dir.exists?("#{rootDir}/#{profile_name}/initialize.d") || Dir.exists?("#{rootDir}/#{profile_name}/preconfigure.d")

@@ -1,0 +1,178 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+setup() {
+  local a xdg_config
+  IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+  for a in "${xdg_config[@]}"; do
+    if [ -e "${a}"/clusterware/config.rc ]; then
+      source "${a}"/clusterware/config.rc
+      break
+    fi
+  done
+  if [ -z "${cw_ROOT}" ]; then
+    echo "$0: unable to locate clusterware configuration"
+    exit 1
+  fi
+  kernel_load
+}
+
+_dereference_group_label() {
+  local label
+  label="$1"
+  if [ -e "${cw_ROOT}/etc/config/autoscaling/by-label/${label}" ]; then
+    basename `readlink "${cw_ROOT}/etc/config/autoscaling/by-label/${label}"`
+  fi
+}
+
+_add_group() {
+  autoscaling_group=$1
+  autoscaling_group_cores=$2
+  autoscaling_group_ram_mib=$3
+  autoscaling_group_maxsize=$4
+  autoscaling_group_label=$5
+
+  mkdir -p "${cw_ROOT}/etc/config/autoscaling/by-label"
+
+  existing_group_with_our_label=$(_dereference_group_label "${autoscaling_group_label}")
+  if [[ "$existing_group_with_our_label" != "" && "$existing_group_with_our_label" != "$autoscaling_group" ]]; then
+    log "Conflicting autoscaling group label ${autoscaling_group_label}, deduplicating."
+    dedupe_attempt=2
+    while true; do
+      existing_group_with_our_label=$(_dereference_group_label "${autoscaling_group_label}${dedupe_attempt}")
+      if [[ "$existing_group_with_our_label" == "" || "$existing_group_with_our_label" == "$autoscaling_group" ]]; then
+        # We've either found an unused label or we've found our actual group
+        break
+      fi
+      let dedupe_attempt=dedupe_attempt+1
+    done
+    autoscaling_group_label=${autoscaling_group_label}${dedupe_attempt}
+  fi
+
+  if [[ "$autoscaling_group_label" == "" ]]; then
+    log "Autoscaling group has no label, using group name instead"
+    autoscaling_group_label=$autoscaling_group
+  fi
+
+  if [ ! -e "${cw_ROOT}/etc/config/autoscaling/by-label/${autoscaling_group_label}" ]; then
+    log "New autoscaling group: ${autoscaling_group_label} => ${autoscaling_group}"
+    ln -s "${cw_ROOT}/etc/config/autoscaling/groups/${autoscaling_group}" "${cw_ROOT}/etc/config/autoscaling/by-label/${autoscaling_group_label}"
+  fi
+
+  if [ ! -d "${cw_ROOT}/etc/config/autoscaling/groups/${autoscaling_group}" ]; then
+    # This is the first time we've seen this group
+    mkdir -p "${cw_ROOT}/etc/config/autoscaling/groups/${autoscaling_group}"
+
+    if [ ! -e "${cw_ROOT}/etc/config/autoscaling/default" ]; then
+      ln -s "${cw_ROOT}/etc/config/autoscaling/by-label/${autoscaling_group_label}" "${cw_ROOT}/etc/config/autoscaling/default"
+    fi
+
+    log "Triggering local 'autoscaling-add-group' event with: ${autoscaling_group_label} ${autoscaling_group_maxsize} ${autoscaling_group_cores} ${autoscaling_group_ram_mib}"
+    "${cw_ROOT}"/libexec/share/trigger-event --local autoscaling-add-group "${autoscaling_group_label}" "${autoscaling_group_maxsize}" "${autoscaling_group_cores}" "${autoscaling_group_ram_mib}"
+  fi
+
+  # Mark this group as permanent (non-reapable when the last node
+  # leaves) by creating a group.rc file containing the core count
+  # (used by autoscaler).
+  cat <<EOF > "${cw_ROOT}/etc/config/autoscaling/groups/${autoscaling_group}/group.rc"
+group_cores="${autoscaling_group_cores}"
+EOF
+}
+
+_group_data_for() {
+  local name cores ram_mib label
+  name="$1"
+  eval $(
+    ruby_run <<RUBY
+require 'yaml'
+group_file = '${cw_ROOT}/etc/autoscaling/group.yml'
+groups = if File.exist?(group_file)
+  YAML.load_file(group_file)
+else
+  {
+    'general-pilot' => {cores: 2, ram_mib: 3840 },
+    'general-economy' => {cores: 36, ram_mib: 60 * 1024 },
+    'general-durable' => {cores: 36, ram_mib: 60 * 1024 },
+    'gpu-pilot' => {cores: 8, ram_mib: 15 * 1024 },
+    'gpu-economy' => {cores: 32, ram_mib: 488 * 1024 },
+    'gpu-durable' => {cores: 32, ram_mib: 488 * 1024 },
+    'highmem-economy' => {cores: 32, ram_mib: 244 * 1024 },
+    'highmem-durable' => {cores: 32, ram_mib: 244 * 1024 },
+    'balanced-economy' => {cores: 40, ram_mib: 160 * 1024 },
+    'balanced-durable' => {cores: 40, ram_mib: 160 * 1024 },
+  }
+end
+m = '${name}'.match(/.*-compute-([^-]*).*/)
+label = m[1].gsub(/([a-z\d])([A-Z])/, '\1-\2').downcase
+if groups.key?(label)
+  puts "cores='#{groups[label][:cores]}'"
+  puts "ram_mib='#{groups[label][:ram_mib]}'"
+  puts "label='#{label}'"
+end
+RUBY
+    )
+  echo "${label} ${cores} ${ram_mib}"
+}
+
+main() {
+  local jq_expr domain cluster
+  files_load_config config config/cluster
+  files_load_config instance config/cluster
+  files_load_config instance-aws config/cluster
+  domain=$(hostname -d | cut -f2 -d.)
+  jq_expr='.AutoScalingGroups | map(select(.AutoScalingGroupName | startswith("flight-'${domain}'-'${cw_CLUSTER_name}'-compute-"))) | .[] | "\(.AutoScalingGroupName) \(.MinSize) \(.MaxSize)"'
+  ${_AWS} --region=${cw_INSTANCE_aws_region} autoscaling describe-auto-scaling-groups | \
+    ${_JQ} -Mcr "$jq_expr" | (
+    while read name min max; do
+      log "Read: $name $min $max"
+      if [ "$min" == "0" ]; then
+        group_data=($(_group_data_for "${name}"))
+        if [ "${#group_data[@]}" == "3" ]; then
+          log "Adding group for '$name': ${group_data[*]}"
+          label="${group_data[0]}"
+          cores="${group_data[1]}"
+          ram_mib="${group_data[2]}"
+          _add_group "${name}" "${cores}" "${ram_mib}" "${max}" "${label}" </dev/null
+        else
+          log "Skipping unrecognized group: ${name}"
+        fi
+      fi
+    done
+  )
+  if [[ "${cw_INSTANCE_tag_SCHEDULER_ROLES}" == *":master:"* ]]; then
+    if handler_is_enabled cluster-slurm; then
+      systemctl restart clusterware-slurm-slurmctld
+    fi
+  fi
+}
+
+setup
+require files
+require log
+require handler
+
+log_set_default "/var/log/clusterware/autoscaler.log"
+
+_JQ="${cw_ROOT}"/opt/jq/bin/jq
+_AWS="${cw_ROOT}"/opt/aws/bin/aws
+
+main "$@"
