@@ -77,6 +77,11 @@ _install_pciutils() {
         if ! rpm -q pciutils >/dev/null; then
             yum install -y -e0 pciutils
         fi
+        if distro_is el6; then
+            yum install -y -e0 http://mirror.centos.org/centos/6/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+        else
+            yum install -y -e0 http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+        fi
     else
         return 1
     fi
@@ -144,7 +149,7 @@ require network
 
 _JQ="${cw_ROOT}"/opt/jq/bin/jq
 _LOG=/var/log/clusterware/nvidia-driver.log
-_VERSION=367.27
+_VERSION=384.98
 _INSTALLER=NVIDIA-Linux-x86_64-${_VERSION}.run
 
 if distro_is el6 || distro_is el7; then
