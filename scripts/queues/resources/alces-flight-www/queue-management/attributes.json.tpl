@@ -1,3 +1,3 @@
 {
-  "hasQueueManangement": true
+  "hasQueueManagement": true
 }
