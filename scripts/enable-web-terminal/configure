@@ -43,8 +43,8 @@ main() {
         return 0
     fi
 
-    "${cw_ROOT}"/bin/alces service install alces-web-terminal
-    "${cw_ROOT}"/bin/alces service enable alces-web-terminal
+    "${cw_ROOT}"/bin/alces service install flight/alces-web-terminal
+    "${cw_ROOT}"/bin/alces service enable flight/alces-web-terminal/base
 }
 
 setup
