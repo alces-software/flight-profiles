@@ -164,7 +164,7 @@ profiles:
       Users and administrators can easily submit and control HPC applications, as well as monitor workload, data, licenses from within the same user dashboard, hiding the heterogeneity and complexity of the native interfaces.
   flight-core:
     manifest:
-    - initialize.d/patch-gridware.sh
+    - initialize.d/patch-platform-detection.sh
     tags:
     - startup
   forge-personality:
