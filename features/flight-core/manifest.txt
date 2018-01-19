@@ -1,1 +1,1 @@
-initialize.d/patch-gridware.sh
+initialize.d/patch-platform-detection.sh
