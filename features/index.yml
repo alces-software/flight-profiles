@@ -165,6 +165,7 @@ profiles:
   flight-core:
     manifest:
     - initialize.d/patch-platform-detection.sh
+    - initialize.d/update-serviceware.sh
     tags:
     - startup
   forge-personality:
