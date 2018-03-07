@@ -155,7 +155,7 @@ main() {
         fi
         vg_remain=$(( ${vg_total} - ${swap_size} ))
         # See if we have more than 1GiB available after enabling swap.
-        if (( ${vg_remain} < 1073741824 )); then
+        if (( ${vg_remain} < 1048576 )); then
             echo "Skipping scratch creation: ${swap_size}KiB for swap leaves only ${vg_remain}KiB for scratch (less than 1GiB)"
             lvcreate -Wy -n swap -l 100%FREE ephemeral
         else

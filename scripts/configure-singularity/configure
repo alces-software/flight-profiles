@@ -52,6 +52,8 @@ _install_singularity() {
     tar xzf singularity-$_VERSION.tar.gz
     cd singularity-$_VERSION
 
+    # install squashfs-tools for building images
+    yum install -y -e0 squashfs-tools
     ./configure --prefix=/opt/apps/singularity/
     make
     make install
