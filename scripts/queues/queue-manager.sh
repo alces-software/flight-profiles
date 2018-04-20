@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+# Copyright (C) 2017-2018 Stephen F. Norledge and Alces Software Ltd.
 #
 # This file/package is part of Alces Clusterware.
 #
@@ -70,7 +70,7 @@ _queues_cluster_uuid() {
 _queues_endpoint() {
   local uuid
   uuid="$(_queues_cluster_uuid)"
-  echo "${_QUEUES_endpoint_url:-https://launch.alces-flight.com}/api/v1/clusters/${uuid}/compute-queue-actions"
+  echo "${_QUEUES_endpoint_url:-https://launch-api.alces-flight.com}/api/v1/clusters/${uuid}/compute-queue-actions"
 }
 
 main() {
