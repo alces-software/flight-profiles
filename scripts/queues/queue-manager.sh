@@ -81,21 +81,28 @@ _queues_endpoint() {
 }
 
 main() {
-  _queues_load_personality
-  local auth_user feature_dir
-  files_load_config instance config/cluster
-  if [ "${cw_INSTANCE_role}" != "master" ]; then
-      return 0
-  fi
+    files_load_config instance config/cluster
+    if [ "${cw_INSTANCE_role}" != "master" ]; then
+        return 0
+    fi
 
-  feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+    if files_lock "launch-queue-management"; then
+        trap files_unlock EXIT
+        _queues_load_personality
+        local auth_user feature_dir
 
-  auth_user=$(_queues_cluster_uuid)
-  ruby_exec "${feature_dir}/share/queue-manager.rb" \
-      "${_ALCES}" \
-      "$(_queues_endpoint)" \
-      "$(auth_user)" \
-      "$(_queues_auth_password)"
+        feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+
+        auth_user=$(_queues_cluster_uuid)
+        ruby_exec "${feature_dir}/share/queue-manager.rb" \
+            "${_ALCES}" \
+            "$(_queues_endpoint)" \
+            "$(auth_user)" \
+            "$(_queues_auth_password)"
+    else
+        echo "Locking failed; unable to process launch compute actions queue"
+        return 1
+    fi
 }
 
 setup
