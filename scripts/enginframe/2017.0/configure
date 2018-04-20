@@ -170,7 +170,7 @@ _execute_installer() {
 _setup_flight_www() {
     if serviceware_is_installed alces-flight-www; then
         cp -R ${_RESOURCES_DIR}/alces-flight-www/etc/* "${cw_ROOT}/etc/alces-flight-www"
-        if handler_is_enabled flight-www; then
+        if handler_is_enabled cluster-www; then
             "${cw_ROOT}"/libexec/share/www-add-attributes ${_RESOURCES_DIR}/alces-flight-www/enginframe/attributes.json.tpl
         fi
     fi
