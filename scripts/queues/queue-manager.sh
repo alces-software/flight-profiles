@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+# Copyright (C) 2017-2018 Stephen F. Norledge and Alces Software Ltd.
 #
 # This file/package is part of Alces Clusterware.
 #
@@ -60,6 +60,13 @@ end
 RUBY
 }
 
+_queues_auth_password() {
+  if [ -z "${cw_CLUSTER_auth_token}" ]; then
+      files_load_config auth config/cluster
+  fi
+  echo "${cw_CLUSTER_auth_token}"
+}
+
 _queues_cluster_uuid() {
   if [ -z "${cw_CLUSTER_uuid}" ]; then
       files_load_config config config/cluster
@@ -70,20 +77,32 @@ _queues_cluster_uuid() {
 _queues_endpoint() {
   local uuid
   uuid="$(_queues_cluster_uuid)"
-  echo "${_QUEUES_endpoint_url:-https://launch.alces-flight.com}/api/v1/clusters/${uuid}/compute-queue-actions"
+  echo "${_QUEUES_endpoint_url:-https://launch-api.alces-flight.com}/api/v1/clusters/${uuid}/compute-queue-actions"
 }
 
 main() {
-  _queues_load_personality
-  local feature_dir
-  files_load_config instance config/cluster
-  if [ "${cw_INSTANCE_role}" != "master" ]; then
-      return 0
-  fi
+    files_load_config instance config/cluster
+    if [ "${cw_INSTANCE_role}" != "master" ]; then
+        return 0
+    fi
 
-  feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+    if files_lock "launch-queue-management"; then
+        trap files_unlock EXIT
+        _queues_load_personality
+        local feature_dir
 
-  ruby_exec "${feature_dir}/share/queue-manager.rb" "${_ALCES}" "$(_queues_endpoint)"
+        feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
+
+        export cw_UI_disable_spinner=true
+        ruby_exec "${feature_dir}/share/queue-manager.rb" \
+            "${_ALCES}" \
+            "$(_queues_endpoint)" \
+            "$(_queues_cluster_uuid)" \
+            "$(_queues_auth_password)"
+    else
+        echo "Locking failed; unable to process launch compute actions queue"
+        return 1
+    fi
 }
 
 setup
