@@ -89,15 +89,14 @@ main() {
     if files_lock "launch-queue-management"; then
         trap files_unlock EXIT
         _queues_load_personality
-        local auth_user feature_dir
+        local feature_dir
 
         feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
 
-        auth_user=$(_queues_cluster_uuid)
         ruby_exec "${feature_dir}/share/queue-manager.rb" \
             "${_ALCES}" \
             "$(_queues_endpoint)" \
-            "$(auth_user)" \
+            "$(_queues_cluster_uuid)" \
             "$(_queues_auth_password)"
     else
         echo "Locking failed; unable to process launch compute actions queue"
