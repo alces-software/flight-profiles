@@ -93,6 +93,7 @@ main() {
 
         feature_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../ && pwd)"
 
+        export cw_UI_disable_spinner=true
         ruby_exec "${feature_dir}/share/queue-manager.rb" \
             "${_ALCES}" \
             "$(_queues_endpoint)" \
