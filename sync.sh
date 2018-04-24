@@ -67,7 +67,7 @@ else
     prefix_name="($1)"
 fi
 
-regions="${REGIONS:-$(aws ec2 --output json describe-regions | grep RegionName | awk '{print $2}' | tr -d '"' | sort)}"
+regions="${REGIONS:-$(aws ec2 --output json describe-regions | grep RegionName | awk '{print $2}' | tr -d '",' | sort)}"
 
 cd $(dirname "$0")
 for r in $regions; do
