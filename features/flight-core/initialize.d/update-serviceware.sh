@@ -5,7 +5,7 @@ if grep -q 'clusterware-dropbox-cli-v2.0.0' /opt/clusterware/etc/serviceware.rc;
 fi
 
 if grep -q 'gridware-20171121-cw1_9' /opt/clusterware/etc/serviceware.rc; then
-    sed -i -e 's/gridware-20171121-cw1_9/gridware-20180116-cw2_0/g' \
+    sed -i -e 's/gridware-20171121-cw1_9/gridware-20180326-cw2_0/g' \
         /opt/clusterware/etc/serviceware.rc
     rm -rf /opt/clusterware/opt/gridware
     /opt/clusterware/bin/alces service install gridware
