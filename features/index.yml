@@ -164,6 +164,33 @@ profiles:
       Users and administrators can easily submit and control HPC applications, as well as monitor workload, data, licenses from within the same user dashboard, hiding the heterogeneity and complexity of the native interfaces.
   flight-core:
     manifest:
+    - configure.d/static-dashboard/default/css/flight-solo.min.css
+    - configure.d/static-dashboard/default/img/brand.png
+    - configure.d/static-dashboard/default/img/favicon.ico
+    - configure.d/static-dashboard/default/img/flight.png
+    - configure.d/static-dashboard/default/img/resources/community.png
+    - configure.d/static-dashboard/default/img/resources/compute.png
+    - configure.d/static-dashboard/default/img/resources/docs.png
+    - configure.d/static-dashboard/default/index.html
+    - configure.d/static-dashboard/default/js/flight.min.js
+    - configure.d/static-dashboard/default/LICENSE
+    - configure.d/static-dashboard/default/vendor/bootstrap/css/bootstrap.min.css
+    - configure.d/static-dashboard/default/vendor/bootstrap/fonts/glyphicons-halflings-regular.eot
+    - configure.d/static-dashboard/default/vendor/bootstrap/fonts/glyphicons-halflings-regular.svg
+    - configure.d/static-dashboard/default/vendor/bootstrap/fonts/glyphicons-halflings-regular.ttf
+    - configure.d/static-dashboard/default/vendor/bootstrap/fonts/glyphicons-halflings-regular.woff
+    - configure.d/static-dashboard/default/vendor/bootstrap/fonts/glyphicons-halflings-regular.woff2
+    - configure.d/static-dashboard/default/vendor/bootstrap/js/bootstrap.min.js
+    - configure.d/static-dashboard/default/vendor/font-awesome/css/font-awesome.min.css
+    - configure.d/static-dashboard/default/vendor/font-awesome/fonts/FontAwesome.otf
+    - configure.d/static-dashboard/default/vendor/font-awesome/fonts/fontawesome-webfont.eot
+    - configure.d/static-dashboard/default/vendor/font-awesome/fonts/fontawesome-webfont.svg
+    - configure.d/static-dashboard/default/vendor/font-awesome/fonts/fontawesome-webfont.ttf
+    - configure.d/static-dashboard/default/vendor/font-awesome/fonts/fontawesome-webfont.woff
+    - configure.d/static-dashboard/default/vendor/font-awesome/fonts/fontawesome-webfont.woff2
+    - configure.d/static-dashboard/default/vendor/jquery/jquery.min.js
+    - configure.d/static-dashboard/etc/alces-flight-www/cluster-vpn.conf.template
+    - configure.d/static-dashboard.sh
     - initialize.d/patch-platform-detection.sh
     - initialize.d/update-serviceware.sh
     tags:
