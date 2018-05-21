@@ -40,11 +40,13 @@ if [ "$1" == "" ]; then
 elif [ "$1" == "--legacy" ]; then
     if [ "$branch" == "master" ]; then
         assert_unchanged
-        # we always tag master when pushed
-        tag=2016.4.$(date +%Y%m%d%H%M%S)
-        git tag $tag && git push origin master && git push --tags
-        if [ $? -gt 0 ]; then
-            exit 1
+        if [ -z "$dry_run" ] ; then
+            # we always tag master when pushed
+            tag=2016.4.$(date +%Y%m%d%H%M%S)
+            git tag $tag && git push origin master && git push --tags
+            if [ $? -gt 0 ]; then
+                exit 1
+            fi
         fi
         prefix=""
         prefix_name="<legacy>"
@@ -55,19 +57,21 @@ elif [ "$1" == "--legacy" ]; then
 else
     if [ "$branch" == "master" ]; then
         assert_unchanged
-        tag_prefix="$1"
-        # we always tag master when pushed
-        tag=$tag_prefix.$(date +%Y%m%d%H%M%S)
-        git tag $tag && git push origin master && git push --tags
-        if [ $? -gt 0 ]; then
-            exit 1
+        if [ -z "$dry_run" ] ; then
+            tag_prefix="$1"
+            # we always tag master when pushed
+            tag=$tag_prefix.$(date +%Y%m%d%H%M%S)
+            git tag $tag && git push origin master && git push --tags
+            if [ $? -gt 0 ]; then
+                exit 1
+            fi
         fi
     fi
     prefix="$1/"
     prefix_name="($1)"
 fi
 
-regions="${REGIONS:-$(aws ec2 --output json describe-regions | grep RegionName | awk '{print $2}' | tr -d '"' | sort)}"
+regions="${REGIONS:-$(aws ec2 --output json describe-regions | grep RegionName | awk '{print $2}' | tr -d '",' | sort)}"
 
 cd $(dirname "$0")
 for r in $regions; do
