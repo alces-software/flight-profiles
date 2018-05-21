@@ -4,13 +4,9 @@ cw_ROOT=/opt/clusterware
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DATA_DIR="${DIR}"/clusterware-www-static-dashboard
 
+# If this is not a Flight Launch cluster, replace the use of Flight Manage
+# with a static dashboard.
 if ! grep -q '^cw_CLUSTER_CUSTOMIZER_features=.*\blaunch-compat\b' ${cw_ROOT}/etc/cluster-customizer.rc; then
-    # Nothing to do this is a Flight Launch cluster.
-    :
-else
-    # This is not a Flight Launch cluster. Replace the use of Flight Manage
-    # with a static dashboard.
-
     # Remove obsolete configuration files.
     if [ -f "${cw_ROOT}/etc/alces-flight-www/server-https.d/redirect-https-to-launch-service.conf" ]; then
         rm "${cw_ROOT}/etc/alces-flight-www/server-https.d/redirect-https-to-launch-service.conf" 
