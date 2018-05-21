@@ -2,6 +2,7 @@
 
 cw_ROOT=/opt/clusterware
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DATA_DIR="${DIR}"/clusterware-www-static-dashboard
 
 if ! grep -q '^cw_CLUSTER_CUSTOMIZER_features=.*\blaunch-compat\b' ${cw_ROOT}/etc/cluster-customizer.rc; then
     # Nothing to do this is a Flight Launch cluster.
@@ -20,11 +21,11 @@ else
 
     # Install updated cluster-vpn nginx config.
     sed -e "s,_ROOT_,${cw_ROOT},g" \
-        "${DIR}"/static-dashboard/etc/alces-flight-www/cluster-vpn.conf.template > \
+        "${DATA_DIR}"/etc/alces-flight-www/cluster-vpn.conf.template > \
         "${cw_ROOT}"/etc/alces-flight-www/server-https.d/cluster-vpn.conf
 
     # Copy static dashboard into place.
-    cp -ar "${DIR}"/static-dashboard/default/* "${cw_ROOT}"/var/lib/alces-flight-www/flight/
+    cp -ar "${DATA_DIR}"/default/* "${cw_ROOT}"/var/lib/alces-flight-www/flight/
 
     source "${cw_ROOT}"/etc/flight.rc
     RELEASE="$(echo ${cw_FLIGHT_release})"
