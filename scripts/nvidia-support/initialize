@@ -57,10 +57,21 @@ _fetch_installer() {
 _install_driver() {
     local install_logfile installer
     installer="$1/${_INSTALLER}"
-    if distro_is el6; then
-        yum install -y -e0 http://mirror.centos.org/centos/6/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+    if [ -f /etc/centos-release ]; then
+        # Try and find a release specific version of kernel-devel from the CentOS vault.
+        rel=$(cat /etc/centos-release | cut -f4 -d' ')
+        yum install -y -e0 http://vault.centos.org/${rel}/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+        if ! rpm -qa kernel-devel | grep -q kernel-devel; then
+            # Release-specific didn't work, fallback to trying the standard mirror repo for the current release
+            if distro_is el6; then
+              yum install -y -e0 http://mirror.centos.org/centos/6/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+            else
+              yum install -y -e0 http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+            fi
+        fi
     else
-      yum install -y -e0 http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-$(uname -r).rpm
+      echo "Your distro is not currently supported."
+      return 1
     fi
     if [ -x "${installer}" ]; then
         install_logfile="$(dirname "${_LOG}")"/nvidia-driver-install-$(date +"%Y%m%d-%H%M%S").log
