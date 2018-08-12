@@ -1,0 +1,116 @@
+#!/bin/bash
+#==============================================================================
+# Copyright (C) 2017 Stephen F. Norledge and Alces Software Ltd.
+#
+# This file/package is part of Alces Clusterware.
+#
+# Alces Clusterware is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Affero General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# Alces Clusterware is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this package.  If not, see <http://www.gnu.org/licenses/>.
+#
+# For more information on the Alces Clusterware, please visit:
+# https://github.com/alces-software/clusterware
+#==============================================================================
+setup() {
+    local a xdg_config
+    IFS=: read -a xdg_config <<< "${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    for a in "${xdg_config[@]}"; do
+        if [ -e "${a}"/clusterware/config.rc ]; then
+            source "${a}"/clusterware/config.rc
+            break
+        fi
+    done
+    if [ -z "${cw_ROOT}" ]; then
+        echo "$0: unable to locate clusterware configuration"
+        exit 1
+    fi
+    kernel_load
+}
+
+enable_flight_tutorials() {
+    "${cw_ROOT}"/bin/alces service install alces-flight-tutorials
+    "${cw_ROOT}"/bin/alces service enable alces-flight-tutorials
+}
+
+create_metadata_file() {
+    cat <<EOF > "${cw_ROOT}"/etc/meta.d/flight-tutorials.rc
+: '
+: SYNOPSIS: Flight Tutorials access details
+: HELP: Display information about the Flight Tutorials service configuration for this cluster.
+: '
+################################################################################
+##
+## Alces Clusterware - Metadata file
+## Copyright (c) 2016 Alces Software Ltd
+##
+################################################################################
+EOF
+    # XXX We should check that HTTPS access is enabled.  We don't run the
+    # tutorials over HTTP, so if it isn't enabled we should bail here and
+    # above too.
+    echo "cw_META_flight_tutorials_https_desc=\"HTTPS access point\"" >> "${cw_ROOT}"/etc/meta.d/flight-tutorials.rc
+    echo "cw_META_flight_tutorials_https=\"$(tutorials_url)\"" >> "${cw_ROOT}"/etc/meta.d/flight-tutorials.rc
+}
+
+add_signal_data() {
+    # Add tutorial access URL to signal.rc
+    signal_data="Flight Tutorials URL=$(tutorials_url)"
+    ruby_run <<RUBY
+content = if File.exists?('${cw_ROOT}/etc/signal.rc')
+  File.read('${cw_ROOT}/etc/signal.rc').gsub!(%(cw_SIGNAL_data="),%(cw_SIGNAL_data="${signal_data};))
+else
+  %(cw_SIGNAL_data="${signal_data}")
+end
+File.write('${cw_ROOT}/etc/signal.rc', content, perm: 0600)
+RUBY
+}
+
+tutorials_url() {
+    local host https_port tutorials_path tutorials_param
+
+    files_load_config --optional access
+    files_load_config --optional alces-flight-tutorials
+    files_load_config --optional alces-flight-www
+
+    host="${cw_ACCESS_fqdn:-$(network_get_public_hostname)}"
+    https_port="${cw_ALCES_FLIGHT_WWW_https_port:-443}"
+    if [ "$https_port" != "443" ]; then
+        https_port=":${https_port}"
+    else
+        https_port=""
+    fi
+    tutorials_path="${cw_ALCES_FLIGHT_TUTORIALS_path:-tutorials}"
+    tutorials_param="${cw_ALCES_FLIGHT_TUTORIALS_tutorial:-default}"
+    if [ "${tutorials_param}" != "default" ] ; then
+        tutorials_param="?tutorials=${tutorials_param}"
+    else
+        tutorials_param=""
+    fi
+
+    echo "https://${host}${https_port}/tutorials${tutorials_param}"
+}
+
+main() {
+    # XXX Will the script be ran on all nodes or just the master node?
+    # XXX Should we check that the node is the master node?  I think that we
+    # only want to do any of this on the master node.
+    enable_flight_tutorials
+    add_signal_data
+    create_metadata_file
+}
+
+setup
+require files
+require network
+require ruby
+
+main "$@"
